@@ -1,0 +1,3502 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sigil Studio — Ritual Chamber V22</title>
+  <style>
+    :root{
+      --bg:#040000;
+      --bg2:#120202;
+      --panel:#0d0101;
+      --panel2:#170303;
+      --line:#351010;
+      --red:#d10a0a;
+      --red2:#7a0000;
+      --wine:#2a0505;
+      --gold:#ff4fd8;
+      --bone:#e8ddd0;
+      --muted:#a89486;
+      --shadow:rgba(209,10,10,.35);
+      --sigil:#d10a0a;
+      --purple:#ff5adf;
+      --silver:#b8bcc8;
+      --success:#e85dff;
+      --stageGlow:rgba(209,10,10,.15);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(122,0,0,.26), transparent 28%),
+        radial-gradient(circle at 80% 0%, rgba(255,107,223,.055), transparent 18%),
+        radial-gradient(circle at 50% 120%, rgba(209,10,10,.14), transparent 42%),
+        linear-gradient(135deg,#020000,#090101 45%,#140303);
+      color:var(--bone);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    body:before{
+      content:"";
+      position:fixed; inset:0;
+      pointer-events:none;
+      background:
+        repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.023) 0 1px, transparent 1px 7px),
+        linear-gradient(90deg, transparent, rgba(209,10,10,.028), transparent);
+      opacity:.6;
+      mix-blend-mode:screen;
+      z-index:0;
+    }
+    .app{
+      position:relative; z-index:1;
+      height:100%;
+      padding:14px;
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      min-height:64px;
+      padding:10px 14px;
+      border:1px solid rgba(209,10,10,.20);
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(16,2,2,.94), rgba(6,0,0,.88));
+      box-shadow:0 16px 45px rgba(0,0,0,.36), inset 0 0 0 1px rgba(255,255,255,.02);
+      flex:0 0 auto;
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .mark{width:42px;height:42px;border-radius:999px;border:1px solid rgba(209,10,10,.5);display:grid;place-items:center;background:radial-gradient(circle, rgba(209,10,10,.22), rgba(5,0,0,.8) 60%);box-shadow:0 0 24px rgba(209,10,10,.2), inset 0 0 18px rgba(209,10,10,.18)}
+    .mark svg{width:28px;height:28px;filter:drop-shadow(0 0 10px var(--shadow))}
+    h1,h2,h3{font-family:Georgia, 'Times New Roman', serif; margin:0; letter-spacing:.04em}
+    h1{font-size:clamp(24px,3.2vw,40px); text-transform:uppercase; line-height:.95}
+    .subtitle{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.14em; margin-top:4px}
+    .top-actions,.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    button{
+      appearance:none; border:none; cursor:pointer; color:var(--bone);
+      background:linear-gradient(180deg, rgba(122,0,0,.95), rgba(42,5,5,.95));
+      border:1px solid rgba(209,10,10,.45);
+      border-radius:14px;
+      padding:11px 14px;
+      font-weight:800; letter-spacing:.07em; text-transform:uppercase; font-size:11px;
+      box-shadow:0 0 0 1px rgba(255,255,255,.035) inset, 0 13px 30px rgba(0,0,0,.35);
+      transition:.18s ease;
+    }
+    button:hover{transform:translateY(-1px); box-shadow:0 0 22px rgba(209,10,10,.18), 0 0 0 1px rgba(255,255,255,.05) inset}
+    button.secondary{background:rgba(7,0,0,.75); border-color:rgba(255,79,216,.35); color:#d9cbbd}
+    button.ghost{background:transparent; border-color:rgba(232,221,208,.12); color:var(--muted); box-shadow:none}
+    button.small{padding:9px 11px; border-radius:11px; font-size:10px}
+    button.active{background:linear-gradient(180deg, rgba(209,10,10,.9), rgba(122,0,0,.9)); color:#fff; border-color:rgba(255,180,180,.5)}
+    button.primary{font-size:12px; padding:14px 18px}
+    .shell{flex:1 1 auto; min-height:0; position:relative}
+    .screen{position:absolute; inset:0; display:none; min-height:0}
+    .screen.active{display:grid}
+
+    .card{
+      border:1px solid rgba(209,10,10,.22);
+      background:linear-gradient(180deg, rgba(18,2,2,.92), rgba(5,0,0,.84));
+      border-radius:24px;
+      padding:16px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.42), inset 0 0 0 1px rgba(255,255,255,.02);
+      position:relative;
+      overflow:hidden;
+      min-height:0;
+    }
+    .card:after{content:"";position:absolute;inset:auto -20% -40% -20%;height:160px;background:radial-gradient(ellipse, rgba(209,10,10,.10), transparent 70%);pointer-events:none}
+    .eyebrow{font-size:10px; letter-spacing:.16em; color:var(--gold); text-transform:uppercase; margin-bottom:8px}
+    .section-title{font-size:18px; text-transform:uppercase; letter-spacing:.08em; margin:0 0 10px; color:#fff4ea}
+    .copy{color:var(--muted); line-height:1.5; font-size:13px}
+    label{display:block; color:#d8c7b8; font-size:11px; text-transform:uppercase; letter-spacing:.12em; margin:14px 0 8px}
+    textarea,input[type="text"]{
+      width:100%; border-radius:18px; border:1px solid rgba(209,10,10,.28);
+      background:rgba(0,0,0,.34); color:#fff5eb;
+      padding:12px 14px; font-size:17px; outline:none; resize:none; min-height:82px;
+      box-shadow: inset 0 0 24px rgba(0,0,0,.35);
+    }
+    textarea:focus,input[type="text"]:focus{border-color:rgba(209,10,10,.8); box-shadow:0 0 0 4px rgba(209,10,10,.12), inset 0 0 24px rgba(0,0,0,.35)}
+    .toggle{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; text-transform:none; letter-spacing:0}
+    .toggle input{accent-color:#d10a0a}
+
+    .input-screen{grid-template-columns:minmax(260px,320px) minmax(0,1.45fr); gap:12px}
+    .input-panel{display:flex; flex-direction:column; gap:8px}
+    .input-footer{margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; position:sticky; bottom:0; padding-top:10px; background:linear-gradient(180deg, rgba(11,1,1,0), rgba(11,1,1,.92) 28%)}
+    .swatches{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .swatch{width:28px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.22);cursor:pointer;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+    .swatch.active{outline:2px solid rgba(232,221,208,.75); outline-offset:2px}
+    input[type="color"]{width:44px;height:34px;border:none;background:transparent;cursor:pointer}
+    .mini-grid{display:grid;grid-template-columns:repeat(9,minmax(24px,1fr));gap:4px}
+    .cell{min-height:28px;display:grid;place-items:center;border-radius:9px;border:1px solid rgba(232,221,208,.10);background:rgba(255,255,255,.025);color:#d8cbbb;font-weight:700;font-size:12px}
+    .cell.num{color:var(--gold); background:rgba(255,79,216,.07)}
+    .cell.hit{color:#fff;border-color:rgba(209,10,10,.9);background:rgba(209,10,10,.22);box-shadow:0 0 20px rgba(209,10,10,.28)}
+    .cell.blank{opacity:.18}
+
+    .preview-shell{display:grid; grid-template-rows:auto 1fr; gap:10px; min-height:0}
+    .dormant-copy{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+    .compact-chart{display:grid;grid-template-columns:1fr;gap:8px}
+    .chamber-box{display:grid;place-items:center;min-height:460px; height:100%; border:1px solid rgba(255,79,216,.18); border-radius:22px; background:radial-gradient(circle, rgba(122,0,0,.08), transparent 55%), rgba(0,0,0,.22); position:relative; overflow:hidden; padding:8px}
+    .chamber-box:before{content:""; position:absolute; inset:12px; border:1px solid rgba(232,221,208,.05); border-radius:18px; pointer-events:none}
+    svg{max-width:100%}
+    .wheel-svg{width:min(760px,100%); max-width:100%; max-height:100%; height:auto; filter:drop-shadow(0 0 18px rgba(209,10,10,.18))}
+    .ring{fill:rgba(0,0,0,.18); stroke:rgba(255,79,216,.34); stroke-width:2}
+    .node-circle{fill:#090000; stroke:rgba(255,79,216,.54); stroke-width:2; transition:.2s ease}
+    .node-circle.active-node{fill:rgba(209,10,10,.45); stroke:#ff5b4b; filter:drop-shadow(0 0 10px rgba(209,10,10,.9))}
+    .node-text{fill:#e8ddd0; font-weight:900; font-size:18px; text-anchor:middle; dominant-baseline:middle; pointer-events:none}
+    .guide-line{stroke:rgba(232,221,208,.08); stroke-width:1}
+    .sigil-path{fill:none; stroke:var(--sigil); stroke-width:6; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 7px var(--sigil));}
+
+    .chamber-screen{grid-template-rows:auto 1fr auto; gap:10px}
+    .summary-bar{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:12px 14px}
+    .summary-text{font-size:12px; color:#fff4ea; letter-spacing:.05em}
+    .summary-text .muted{color:var(--muted)}
+    .stage-pills{display:flex; gap:7px; flex-wrap:wrap}
+    .pill{padding:8px 10px; border-radius:999px; border:1px solid rgba(232,221,208,.10); color:var(--muted); font-size:10px; letter-spacing:.1em; text-transform:uppercase; background:rgba(0,0,0,.28)}
+    .pill.active{color:#fff; border-color:rgba(209,10,10,.6); background:rgba(122,0,0,.28); box-shadow:0 0 18px rgba(209,10,10,.12)}
+    .chamber-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(380px,1.4fr) minmax(260px,.9fr); gap:10px; min-height:0}
+    .process-panel,.side-panel,.main-panel{display:flex;flex-direction:column;min-height:0}
+    .process-panel .process-stack{display:grid; gap:9px; overflow:hidden}
+    .process-box{border:1px solid rgba(232,221,208,.09); border-radius:16px; padding:11px 12px; background:rgba(0,0,0,.22); min-height:68px}
+    .process-box.active{border-color:rgba(209,10,10,.42); box-shadow:0 0 24px rgba(209,10,10,.08); background:linear-gradient(180deg, rgba(43,7,7,.55), rgba(0,0,0,.24))}
+    .process-label{font-size:10px; color:var(--gold); text-transform:uppercase; letter-spacing:.15em; margin-bottom:6px}
+    .process-value{font-size:18px; letter-spacing:.07em; color:#fff; word-break:break-word}
+    .process-value.small{font-size:14px; color:#efe3d6; line-height:1.45}
+    .main-panel .hero{display:grid; grid-template-rows:auto 1fr auto; min-height:0; gap:10px}
+    .stage-banner{padding:10px 14px; border-radius:18px; border:1px solid rgba(255,79,216,.18); background:rgba(0,0,0,.23); display:flex; align-items:center; justify-content:space-between; gap:8px}
+    .stage-title{font-size:16px; text-transform:uppercase; letter-spacing:.08em; font-family:Georgia, 'Times New Roman', serif}
+    .status{font-size:11px; color:var(--gold); letter-spacing:.15em; text-transform:uppercase}
+    .forge-stage{display:grid; place-items:center; min-height:0; border-radius:22px; border:1px solid rgba(209,10,10,.14); background:radial-gradient(circle, var(--stageGlow), transparent 55%), rgba(0,0,0,.18); position:relative; overflow:hidden}
+    .forge-stage.ritual{background:radial-gradient(circle, rgba(255,107,223,.11), transparent 30%), radial-gradient(circle, rgba(209,10,10,.16), transparent 65%), rgba(0,0,0,.18)}
+    .helper-line{font-size:12px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; text-align:center; margin-top:6px}
+    .side-card{border:1px solid rgba(255,79,216,.18); border-radius:18px; padding:12px; background:rgba(0,0,0,.2)}
+    .side-card + .side-card{margin-top:10px}
+    .preview-modes,.variant-buttons{display:flex; gap:7px; flex-wrap:wrap}
+    .variant-buttons{justify-content:flex-start}
+    .bottom-dock{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 14px}
+    .bottom-left,.bottom-right{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .preview-stage{display:grid; place-items:center; height:100%; width:100%; position:relative; padding:18px}
+    .preview-frame{display:grid; place-items:center; width:min(100%,720px); height:min(100%,520px); border-radius:24px; position:relative}
+    .preview-frame.mode-sigil{background:radial-gradient(circle, rgba(122,0,0,.12), transparent 58%), rgba(0,0,0,.18); border:1px solid rgba(209,10,10,.16)}
+    .preview-frame.mode-phone{width:min(320px,76%); height:min(560px,92%); background:#0c0202; border:10px solid #1a0a0a; border-radius:38px; box-shadow:0 0 0 1px rgba(255,255,255,.03) inset}
+    .preview-frame.mode-phone:before{content:""; position:absolute; top:10px; width:90px; height:16px; border-radius:0 0 16px 16px; background:#000}
+    .preview-frame.mode-desktop{width:min(620px,94%); height:min(380px,88%); background:#090202; border:12px solid #171717; border-bottom-width:18px; border-radius:18px; box-shadow:0 12px 28px rgba(0,0,0,.4)}
+    .preview-frame.mode-desktop:after{content:""; position:absolute; bottom:-36px; width:120px; height:26px; background:#272727; border-radius:0 0 14px 14px; box-shadow:0 20px 0 8px #1b1b1b}
+    .preview-frame.mode-shirt{width:min(420px,88%); height:min(460px,90%); background:transparent}
+    .shirt-shape{position:absolute; inset:0; clip-path:polygon(29% 8%, 41% 8%, 47% 4%, 53% 4%, 59% 8%, 71% 8%, 84% 18%, 76% 31%, 72% 92%, 28% 92%, 24% 31%, 16% 18%); background:#0e0e0e; border:1px solid rgba(255,255,255,.04)}
+    .preview-frame.mode-poster{width:min(360px,84%); height:min(480px,92%); background:linear-gradient(180deg,#f0e0c3,#d8c2a2); border-radius:10px; box-shadow:0 18px 28px rgba(0,0,0,.32); color:#1d1206}
+    .preview-frame.mode-poster .poster-head{position:absolute; top:18px; font-family:Georgia, serif; font-size:20px; letter-spacing:.08em; text-transform:uppercase; color:#34180a}
+    .preview-svg{width:100%; height:100%}
+    .transparent-note{font-size:11px; color:var(--muted)}
+
+    .overlay{position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; padding:16px; z-index:8}
+    .overlay.active{display:flex}
+    .modal{width:min(1100px,100%); height:min(88vh,760px); display:grid; grid-template-rows:auto 1fr; gap:10px}
+    .modal-head{display:flex; justify-content:space-between; gap:10px; align-items:center; padding:12px 14px}
+    .gallery-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; overflow:auto; padding-right:4px}
+    .gallery-card{border:1px solid rgba(232,221,208,.11); background:rgba(0,0,0,.24); border-radius:18px; padding:10px; min-height:190px; cursor:pointer}
+    .gallery-card svg{height:105px; width:100%; display:block; border-radius:12px; background:rgba(0,0,0,.22)}
+    .gallery-title{font-size:11px; color:#fff; letter-spacing:.04em; margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .gallery-meta{font-size:10px; color:var(--muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .hidden{display:none!important}
+    .notice{border:1px solid rgba(255,79,216,.24); background:rgba(255,79,216,.06); color:#d7c5a4; border-radius:16px; padding:11px 12px; font-size:12px; line-height:1.5}
+    .print-card{display:none}
+    .letter{display:inline-block; transition:.45s ease; margin-right:2px}
+    .letter.vanish{color:#ff4545; transform:translateY(-10px) scale(.75); opacity:0; filter:blur(4px)}
+    .letter.duplicate{color:#ff3636; transform:scale(.35); opacity:0; filter:blur(2px)}
+    .cooling{animation:coolPulse .95s ease 1}
+    @keyframes coolPulse{0%{transform:scale(.96);filter:brightness(1.6)}65%{transform:scale(1.02);filter:brightness(1.15)}100%{transform:scale(1);filter:brightness(1)}}
+
+    @media (max-width: 1100px){
+      .input-screen{grid-template-columns:1fr}
+      .chamber-layout{grid-template-columns:250px 1fr}
+      .side-panel{display:none}
+    }
+    @media (max-width: 860px){
+      .app{padding:10px; gap:10px}
+      .topbar{padding:10px 12px}
+      .chamber-screen{grid-template-rows:auto 1fr auto}
+      .chamber-layout{grid-template-columns:1fr}
+      .process-panel{order:2}
+      .main-panel{order:1}
+      .process-panel .process-stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .summary-bar,.bottom-dock{padding:10px 12px}
+      h1{font-size:26px}
+    }
+    @media (max-width: 620px){
+      body{overflow:auto}
+      .chamber-box{min-height:320px}
+      .input-footer{position:static; background:none; padding-top:6px}
+      .topbar{min-height:auto}
+      .process-panel .process-stack{grid-template-columns:1fr}
+      button{padding:10px 12px}
+      .top-actions{display:none}
+      .summary-bar{align-items:flex-start}
+      .preview-frame.mode-phone{width:78%; height:88%}
+      .bottom-dock{justify-content:flex-start}
+    }
+    @media print{
+      body{background:white;color:black;overflow:visible}
+      body:before,.app{display:none!important}
+      .print-card{display:flex!important; min-height:100vh; align-items:center; justify-content:center; padding:30px; color:#111; background:white; font-family:Georgia,'Times New Roman',serif}
+      .print-inner{text-align:center; width:100%}
+      .print-title{font-size:28px; margin-bottom:20px; text-transform:uppercase; letter-spacing:.08em}
+      .print-sigil svg{width:70vw; max-width:650px; height:auto}
+      .print-meta{font-size:14px; margin-top:20px; color:#333; font-family:Arial,sans-serif}
+    }
+  
+/* === V4 LAYOUT STABILITY PATCH: no clipped wheel + scrollable controls === */
+html, body{
+  height:100%;
+}
+body{
+  overflow:hidden;
+}
+.app{
+  padding:8px 10px;
+  gap:8px;
+}
+.topbar{
+  min-height:50px;
+  padding:7px 10px;
+  border-radius:18px;
+}
+.mark{
+  width:36px;
+  height:36px;
+}
+.mark svg{
+  width:24px;
+  height:24px;
+}
+h1{
+  font-size:clamp(22px,2.8vw,34px);
+}
+.subtitle{
+  font-size:10px;
+  margin-top:2px;
+}
+.card{
+  padding:12px;
+  border-radius:20px;
+}
+.summary-bar{
+  padding:7px 10px;
+  min-height:44px;
+}
+.summary-text{
+  font-size:11px;
+}
+.chamber-screen{
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:7px;
+}
+.chamber-layout{
+  grid-template-columns:minmax(200px,.7fr) minmax(500px,1.95fr) minmax(250px,.82fr);
+  gap:8px;
+  min-height:0;
+  overflow:hidden;
+}
+.process-panel,
+.main-panel,
+.side-panel{
+  min-height:0;
+}
+.side-panel.card{
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:10px;
+  scrollbar-width:thin;
+}
+.side-panel.card::-webkit-scrollbar{
+  width:8px;
+}
+.side-panel.card::-webkit-scrollbar-thumb{
+  background:rgba(255,79,216,.35);
+  border-radius:99px;
+}
+.side-panel.card::-webkit-scrollbar-track{
+  background:rgba(0,0,0,.18);
+}
+.main-panel .hero{
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-height:0;
+}
+.stage-banner{
+  padding:7px 10px;
+  border-radius:14px;
+}
+.stage-title{
+  font-size:14px;
+}
+.status{
+  font-size:10px;
+}
+.forge-stage{
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+  padding:6px;
+}
+.preview-stage{
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  padding:10px;
+  overflow:hidden;
+}
+.preview-frame{
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  border-radius:18px;
+  overflow:hidden;
+}
+.preview-frame.mode-sigil{
+  aspect-ratio:1 / 1;
+  width:min(100%, 66vh, 680px);
+  height:auto;
+  max-height:100%;
+}
+.preview-svg,
+.wheel-svg{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+.preview-frame.mode-sigil .preview-svg,
+.preview-frame.mode-sigil .wheel-svg{
+  width:100%;
+  height:100%;
+}
+.bottom-dock{
+  padding:7px 10px;
+  min-height:42px;
+  gap:6px;
+}
+.bottom-dock button{
+  padding:7px 9px;
+  font-size:9px;
+}
+.side-card{
+  padding:10px;
+  border-radius:14px;
+}
+.side-card + .side-card{
+  margin-top:8px;
+}
+.preview-modes,
+.variant-buttons{
+  gap:6px;
+}
+.process-box{
+  min-height:58px;
+  padding:9px 10px;
+}
+.process-value{
+  font-size:15px;
+}
+.process-value.small{
+  font-size:12px;
+}
+.pill{
+  padding:6px 8px;
+  font-size:9px;
+}
+.helper-line{
+  font-size:10px;
+  margin-top:3px;
+}
+.input-screen{
+  grid-template-columns:minmax(250px,310px) minmax(0,1.65fr);
+}
+textarea,input[type="text"]{
+  min-height:70px;
+  padding:10px 12px;
+}
+.chamber-box{
+  min-height:0;
+}
+.chamber-box .wheel-svg{
+  width:min(100%, 70vh, 720px);
+  height:auto;
+}
+@media (max-width: 1250px){
+  body{
+    overflow:auto;
+  }
+  .app{
+    height:auto;
+    min-height:100vh;
+  }
+  .shell{
+    min-height:calc(100vh - 74px);
+  }
+  .screen{
+    position:relative;
+    inset:auto;
+  }
+  .input-screen{
+    grid-template-columns:1fr;
+  }
+  .chamber-screen{
+    grid-template-rows:auto auto auto;
+  }
+  .chamber-layout{
+    grid-template-columns:minmax(0,1fr);
+    overflow:visible;
+  }
+  .main-panel{
+    order:1;
+    min-height:560px;
+  }
+  .process-panel{
+    order:2;
+  }
+  .side-panel{
+    order:3;
+  }
+  .side-panel.card{
+    display:flex;
+    max-height:none;
+    overflow:visible;
+    padding-right:12px;
+  }
+  .bottom-dock{
+    position:relative;
+  }
+  .preview-frame.mode-sigil{
+    width:min(100%, 620px);
+  }
+}
+@media (max-width: 760px){
+  .main-panel{
+    min-height:430px;
+  }
+  .preview-stage{
+    padding:6px;
+  }
+  .process-panel .process-stack{
+    grid-template-columns:1fr;
+  }
+  .top-actions{
+    display:none;
+  }
+  .summary-bar,
+  .bottom-dock{
+    align-items:flex-start;
+  }
+}
+
+  
+/* === V6 FORGE TIMING + STARTUP ANIMATION PATCH === */
+.demo-path{
+  fill:none;
+  stroke:var(--sigil);
+  stroke-width:7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+  opacity:.72;
+  filter:drop-shadow(0 0 8px var(--sigil));
+  animation:demoDraw 3.2s cubic-bezier(.2,.85,.15,1) infinite;
+}
+.demo-node{
+  fill:var(--sigil);
+  opacity:.55;
+  animation:demoPulse 1.6s ease-in-out infinite;
+}
+@keyframes demoDraw{
+  0%{stroke-dashoffset:1; opacity:.08}
+  12%{opacity:.82}
+  72%{stroke-dashoffset:0; opacity:.82}
+  100%{stroke-dashoffset:0; opacity:.08}
+}
+@keyframes demoPulse{
+  0%,100%{transform:scale(.75); opacity:.28}
+  50%{transform:scale(1); opacity:.72}
+}
+.sigil-path.is-drawing{
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+}
+
+  
+/* === V7 STARTUP CHAMBER + IGNITION TRANSITION === */
+.chamber-box{
+  isolation:isolate;
+}
+.dormant-wheel-svg{
+  opacity:.28;
+  position:relative;
+  z-index:1;
+}
+.ambient-sigil-layer{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  overflow:hidden;
+  transition:opacity .4s ease, transform .4s ease;
+}
+.ambient-sigil{
+  position:absolute;
+  width:var(--size);
+  height:var(--size);
+  left:var(--left);
+  top:var(--top);
+  opacity:var(--op);
+  transform-origin:center;
+  animation:ambientFloat var(--floatDur) ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 9px var(--c));
+}
+.ambient-sigil svg{
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.ambient-sigil path,
+.ambient-sigil circle,
+.ambient-sigil line,
+.ambient-sigil polyline,
+.ambient-sigil polygon{
+  vector-effect:non-scaling-stroke;
+}
+.ambient-line{
+  fill:none;
+  stroke:var(--c);
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+  animation:ambientDraw var(--drawDur) cubic-bezier(.2,.85,.15,1) infinite;
+  animation-delay:var(--delay);
+}
+.ambient-ring{
+  fill:none;
+  stroke:var(--c);
+  stroke-width:2.4;
+  opacity:.54;
+  transform-origin:center;
+  animation:ambientRotate var(--spinDur) linear infinite;
+}
+.ambient-dot{
+  fill:var(--c);
+  opacity:.6;
+  animation:ambientPulse 1.8s ease-in-out infinite;
+  animation-delay:var(--delay);
+}
+.glyph-dust{
+  position:absolute;
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:var(--c);
+  opacity:.34;
+  left:var(--left);
+  top:var(--top);
+  box-shadow:0 0 10px var(--c);
+  animation:dustDrift var(--floatDur) ease-in-out infinite alternate;
+}
+.dormant-prompt{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  z-index:4;
+  transform:translateX(-50%);
+  padding:9px 13px;
+  border:1px solid rgba(255,79,216,.24);
+  border-radius:999px;
+  background:rgba(0,0,0,.34);
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  backdrop-filter:blur(5px);
+}
+.ignite-core{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,107,223,.34), transparent 16%),
+    radial-gradient(circle at 50% 50%, rgba(209,10,10,.35), transparent 31%),
+    radial-gradient(circle at 50% 50%, rgba(255,79,216,.18), transparent 45%);
+  transform:scale(.18);
+}
+.chamber-box.igniting .ambient-sigil-layer{
+  animation:ambientCollapse .9s cubic-bezier(.2,.85,.15,1) forwards;
+}
+.chamber-box.igniting .dormant-wheel-svg{
+  animation:wheelIgnite .9s cubic-bezier(.2,.85,.15,1) forwards;
+}
+.chamber-box.igniting .ignite-core{
+  animation:coreIgnite .9s cubic-bezier(.2,.85,.15,1) forwards;
+}
+.chamber-box.igniting .dormant-prompt{
+  animation:promptVanish .45s ease forwards;
+}
+@keyframes ambientDraw{
+  0%{stroke-dashoffset:1; opacity:0}
+  12%{opacity:.72}
+  58%{stroke-dashoffset:0; opacity:.82}
+  76%{stroke-dashoffset:0; opacity:.55}
+  100%{stroke-dashoffset:0; opacity:0}
+}
+@keyframes ambientFloat{
+  0%{transform:translate3d(0,8px,0) rotate(calc(var(--rot) * -1)) scale(var(--scale))}
+  100%{transform:translate3d(var(--driftX),-10px,0) rotate(var(--rot)) scale(calc(var(--scale) * 1.04))}
+}
+@keyframes ambientRotate{
+  to{transform:rotate(360deg)}
+}
+@keyframes ambientPulse{
+  0%,100%{transform:scale(.65); opacity:.24}
+  50%{transform:scale(1.15); opacity:.72}
+}
+@keyframes dustDrift{
+  0%{transform:translate3d(0,0,0); opacity:.12}
+  100%{transform:translate3d(var(--driftX),-18px,0); opacity:.48}
+}
+@keyframes ambientCollapse{
+  0%{opacity:1; transform:scale(1); filter:blur(0)}
+  55%{opacity:.86; transform:scale(.72); filter:blur(.4px)}
+  100%{opacity:0; transform:scale(.16); filter:blur(5px)}
+}
+@keyframes coreIgnite{
+  0%{opacity:0; transform:scale(.1)}
+  35%{opacity:1; transform:scale(.72)}
+  72%{opacity:.82; transform:scale(1.18)}
+  100%{opacity:0; transform:scale(1.7)}
+}
+@keyframes wheelIgnite{
+  0%{opacity:.28; transform:scale(1)}
+  45%{opacity:.65; transform:scale(.96)}
+  100%{opacity:0; transform:scale(1.08)}
+}
+@keyframes promptVanish{
+  to{opacity:0; transform:translateX(-50%) translateY(10px); filter:blur(3px)}
+}
+
+  
+/* === V8 GUARANTEED HOME SCREEN SIGIL === */
+.home-sigil-hero{
+  position:absolute;
+  inset:7%;
+  z-index:4;
+  width:86%;
+  height:86%;
+  pointer-events:none;
+  opacity:.9;
+  filter:drop-shadow(0 0 18px rgba(209,10,10,.42));
+}
+.home-sigil-hero *{
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.home-orbit{
+  fill:none;
+  stroke:rgba(255,79,216,.42);
+  stroke-width:2;
+  stroke-dasharray:10 14;
+  animation:homeOrbitSpin 18s linear infinite;
+}
+.home-orbit-2{
+  stroke:rgba(255,132,232,.30);
+  stroke-dasharray:4 11;
+  animation-duration:12s;
+  animation-direction:reverse;
+}
+.home-draw{
+  fill:none;
+  stroke:var(--sigil);
+  stroke-width:7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+  filter:url(#homeSigilGlow);
+  animation:homeSigilDraw 4.2s cubic-bezier(.2,.85,.15,1) infinite;
+}
+.home-main{
+  stroke-width:9;
+}
+.home-secondary{
+  stroke:#ff5adf;
+  stroke-width:4.5;
+  opacity:.75;
+  animation-duration:5.4s;
+}
+.home-secondary.delay-a{
+  animation-delay:-1.1s;
+  stroke:var(--sigil);
+  opacity:.58;
+}
+.home-secondary.delay-b{
+  animation-delay:-2.2s;
+  stroke:#ff4fd8;
+  opacity:.46;
+}
+.home-node{
+  fill:var(--sigil);
+  opacity:.8;
+  filter:drop-shadow(0 0 9px var(--sigil));
+  animation:homeNodePulse 1.7s ease-in-out infinite;
+}
+.home-node.n2{animation-delay:.15s}
+.home-node.n3{animation-delay:.3s}
+.home-node.n4{animation-delay:.45s}
+.home-node.n5{animation-delay:.6s}
+.chamber-box.igniting .home-sigil-hero{
+  animation:homeHeroIgnite .9s cubic-bezier(.2,.85,.15,1) forwards;
+}
+@keyframes homeSigilDraw{
+  0%{stroke-dashoffset:1; opacity:.08}
+  14%{opacity:.92}
+  62%{stroke-dashoffset:0; opacity:.92}
+  82%{stroke-dashoffset:0; opacity:.58}
+  100%{stroke-dashoffset:0; opacity:.08}
+}
+@keyframes homeNodePulse{
+  0%,100%{transform:scale(.72); opacity:.38}
+  50%{transform:scale(1.25); opacity:1}
+}
+@keyframes homeOrbitSpin{
+  to{transform:rotate(360deg)}
+}
+@keyframes homeHeroIgnite{
+  0%{opacity:.92; transform:scale(1)}
+  55%{opacity:.86; transform:scale(.78) rotate(8deg); filter:blur(.2px) drop-shadow(0 0 22px var(--sigil))}
+  100%{opacity:0; transform:scale(.12) rotate(28deg); filter:blur(6px)}
+}
+
+  
+/* === V10 polish: faster tracing + transparency UI === */
+.preview-frame.transparent-on{
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,.055) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.055) 75%),
+    linear-gradient(45deg, rgba(255,255,255,.055) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.055) 75%);
+  background-size:22px 22px;
+  background-position:0 0, 11px 11px;
+}
+.preview-frame.mode-sigil.transparent-on{border:1px dashed rgba(255,79,216,.22)}
+.preview-frame.mode-phone.transparent-on,
+.preview-frame.mode-desktop.transparent-on,
+.preview-frame.mode-poster.transparent-on{background-color:transparent}
+.shirt-shape.transparent-on{background:transparent; border:1px dashed rgba(255,79,216,.28)}
+#transparentPreviewBtn.active{background:linear-gradient(180deg, rgba(255,107,223,.24), rgba(209,10,10,.16)); border-color:rgba(255,79,216,.45)}
+
+
+/* === V11 flagship style pass === */
+.variant-buttons .active[data-variant="rune"]{
+  box-shadow:0 0 0 1px rgba(255,79,216,.28) inset, 0 0 18px rgba(255,107,223,.20), 0 0 24px rgba(209,10,10,.14);
+}
+
+
+/* === V12 PRD IMPLEMENTATION: balanced motion + HoloNet-style forge lines + completion pop === */
+.overlay.open{display:flex}
+.preview-frame{
+  isolation:isolate;
+}
+.sigil-path{
+  stroke-width:7.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:url(#sigilPremiumGlow);
+}
+.sigil-holo-wide{
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.18;
+  filter:url(#sigilPremiumGlow);
+  mix-blend-mode:screen;
+}
+.sigil-holo-mid{
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.74;
+  filter:url(#sigilPremiumGlow);
+}
+.sigil-holo-core{
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.96;
+}
+.sigil-holo-hot{
+  fill:none;
+  stroke:#fff7e6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.54;
+  mix-blend-mode:screen;
+}
+.preview-frame.completion-burst::before{
+  content:"";
+  position:absolute;
+  z-index:7;
+  left:50%;
+  top:50%;
+  width:34%;
+  aspect-ratio:1/1;
+  border-radius:999px;
+  border:2px solid rgba(255,214,132,.94);
+  transform:translate(-50%,-50%) scale(.36);
+  opacity:0;
+  pointer-events:none;
+  box-shadow:
+    0 0 18px rgba(255,214,132,.92),
+    0 0 38px rgba(209,10,10,.72),
+    0 0 72px rgba(255,107,223,.34),
+    inset 0 0 22px rgba(255,214,132,.58);
+  animation:sigilCompletionRing .82s cubic-bezier(.12,.86,.14,1) forwards;
+}
+.preview-frame.completion-burst::after{
+  content:"";
+  position:absolute;
+  z-index:6;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,245,210,.88) 0 1.5%, transparent 4%),
+    radial-gradient(circle at 45% 44%, rgba(255,99,52,.78) 0 .9%, transparent 2.6%),
+    radial-gradient(circle at 55% 43%, rgba(255,132,232,.58) 0 .85%, transparent 2.5%),
+    radial-gradient(circle at 58% 57%, rgba(255,174,76,.76) 0 .8%, transparent 2.4%),
+    radial-gradient(circle at 42% 59%, rgba(255,78,78,.72) 0 .85%, transparent 2.5%),
+    radial-gradient(circle at 50% 50%, rgba(255,214,132,.34), transparent 28%),
+    radial-gradient(circle at 50% 50%, rgba(209,10,10,.28), transparent 44%);
+  opacity:0;
+  transform:scale(.68);
+  filter:blur(.15px);
+  mix-blend-mode:screen;
+  animation:sigilCompletionFlash .9s cubic-bezier(.12,.86,.14,1) forwards;
+}
+@keyframes sigilCompletionRing{
+  0%{opacity:0; transform:translate(-50%,-50%) scale(.28)}
+  18%{opacity:1}
+  72%{opacity:.62}
+  100%{opacity:0; transform:translate(-50%,-50%) scale(2.05)}
+}
+@keyframes sigilCompletionFlash{
+  0%{opacity:0; transform:scale(.58); filter:brightness(1.2)}
+  16%{opacity:1; transform:scale(.82); filter:brightness(2.2)}
+  52%{opacity:.82; transform:scale(1.08); filter:brightness(1.6)}
+  100%{opacity:0; transform:scale(1.42); filter:brightness(1)}
+}
+.preview-frame.completion-burst .preview-svg{
+  animation:sigilCompleteGlow .78s cubic-bezier(.12,.86,.14,1) forwards;
+}
+@keyframes sigilCompleteGlow{
+  0%{filter:brightness(1)}
+  22%{filter:brightness(1.85) saturate(1.25) drop-shadow(0 0 22px rgba(209,10,10,.7))}
+  100%{filter:brightness(1) saturate(1)}
+}
+.ambient-sigil{
+  will-change:transform, opacity;
+}
+.glyph-dust{
+  will-change:transform, opacity;
+}
+@media (prefers-reduced-motion: reduce){
+  .ambient-sigil,
+  .ambient-line,
+  .ambient-ring,
+  .ambient-dot,
+  .glyph-dust,
+  .home-draw,
+  .home-node,
+  .home-orbit,
+  .demo-path,
+  .demo-node{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+  }
+  .preview-frame.completion-burst::before,
+  .preview-frame.completion-burst::after{
+    animation:none!important;
+    opacity:0!important;
+  }
+}
+
+
+
+
+/* === V13 FINAL POLISH: mobile performance, pink occult accents, toned home sigil === */
+:root{
+  --gold:#ff4fd8;
+  --pink:#ff4fd8;
+  --pinkSoft:rgba(255,79,216,.22);
+  --pinkFaint:rgba(255,79,216,.095);
+  --inkRune:rgba(255,79,216,.16);
+}
+.card,
+.side-card,
+.process-box,
+.stage-banner,
+.preview-frame.mode-sigil,
+.chamber-box{
+  border-color:rgba(255,79,216,.20);
+}
+.card{
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255,79,216,.055), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(209,10,10,.065), transparent 36%),
+    linear-gradient(180deg, rgba(18,2,8,.94), rgba(5,0,2,.86));
+}
+.side-card,
+.process-box,
+.stage-banner{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg, rgba(255,79,216,.045), transparent 32%),
+    rgba(0,0,0,.22);
+}
+.card::before,
+.side-card::before,
+.process-box::before,
+.stage-banner::before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg, var(--inkRune) 0 22px, transparent 22px calc(100% - 22px), var(--inkRune) calc(100% - 22px)) top/100% 1px no-repeat,
+    linear-gradient(90deg, var(--inkRune) 0 22px, transparent 22px calc(100% - 22px), var(--inkRune) calc(100% - 22px)) bottom/100% 1px no-repeat,
+    linear-gradient(180deg, var(--inkRune) 0 22px, transparent 22px calc(100% - 22px), var(--inkRune) calc(100% - 22px)) left/1px 100% no-repeat,
+    linear-gradient(180deg, var(--inkRune) 0 22px, transparent 22px calc(100% - 22px), var(--inkRune) calc(100% - 22px)) right/1px 100% no-repeat;
+  opacity:.72;
+}
+.side-card::after,
+.process-box::after,
+.stage-banner::after{
+  content:"✦";
+  position:absolute;
+  right:12px;
+  bottom:8px;
+  color:rgba(255,79,216,.22);
+  font-size:13px;
+  pointer-events:none;
+}
+button.secondary,
+button.ghost,
+.pill,
+.cell,
+.node-circle,
+.ring{
+  border-color:rgba(255,79,216,.28);
+}
+button:hover{box-shadow:0 0 22px rgba(255,79,216,.16), 0 0 0 1px rgba(255,255,255,.05) inset}
+.cell.num{color:var(--pink); background:rgba(255,79,216,.075)}
+.eyebrow,.status,.process-label{color:var(--pink)}
+
+/* Toned home sigil: red + blue again, less center noise before generation */
+.home-sigil-hero{
+  opacity:.48;
+  filter:drop-shadow(0 0 10px rgba(209,10,10,.24));
+}
+.home-orbit{opacity:.24; stroke:rgba(255,79,216,.24)}
+.home-orbit-2{opacity:.28; stroke:rgba(255,132,232,.26)}
+.home-main{stroke-width:7.2; opacity:.72}
+.home-secondary{opacity:.42; stroke:#348cff; stroke-width:3.6}
+.home-secondary.delay-a{opacity:.18; stroke:#d10a0a}
+.home-secondary.delay-b{opacity:.08; stroke:#ff4fd8}
+.home-node{opacity:.42}
+.dormant-wheel-svg{opacity:.22}
+.demo-path,.demo-node{opacity:.32}
+
+.sigil-holo-edge,
+.sigil-holo-inner,
+.sigil-holo-spark{
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  mix-blend-mode:screen;
+  filter:url(#sigilPremiumGlow);
+}
+.sigil-holo-inner{filter:none; mix-blend-mode:screen}
+.sigil-holo-spark{filter:none; stroke-dashoffset:0; animation:sparkCrawl 6.2s linear infinite}
+@keyframes sparkCrawl{to{stroke-dashoffset:-38}}
+
+/* Mobile lean mode: make the Generate button feel instant and cut heavy atmosphere. */
+@media (max-width: 760px), (pointer: coarse) and (max-width: 980px){
+  body{overflow:auto}
+  .ambient-sigil:nth-child(n+8),
+  .glyph-dust:nth-of-type(n+14){display:none!important}
+  .ambient-line,
+  .ambient-ring,
+  .ambient-dot,
+  .home-draw,
+  .home-node,
+  .home-orbit,
+  .demo-path,
+  .demo-node,
+  .sigil-holo-spark{
+    animation:none!important;
+  }
+  .home-sigil-hero{opacity:.34; filter:drop-shadow(0 0 7px rgba(209,10,10,.18))}
+  .dormant-wheel-svg{opacity:.16}
+  .forge-stage.ritual{background:radial-gradient(circle, rgba(209,10,10,.10), transparent 58%), rgba(0,0,0,.16)}
+  .sigil-holo-wide{opacity:.08!important}
+  .sigil-holo-edge{display:none!important}
+  .preview-frame.completion-burst::before{animation-duration:.55s}
+  .preview-frame.completion-burst::after{animation-duration:.6s}
+  .card::before,.side-card::before,.process-box::before,.stage-banner::before{opacity:.42}
+}
+
+
+/* === V14 RUNE-FIRST / TRUE-PINK / GRIMOIRE PANEL PASS === */
+:root{
+  --pink:#ff6bdf;
+  --pinkHot:#ff3fcf;
+  --pinkPale:#ffc8f4;
+  --pinkDeep:#7a0b4f;
+  --purple:#ff83e8;
+  --gold:#ff6bdf;
+  --inkRune:rgba(255,107,223,.20);
+}
+/* Pink should read as pink, not violet. Keep the old variable name for JS compatibility, but visually make it rose/magenta. */
+.home-orbit{stroke:rgba(255,107,223,.22)}
+.home-orbit-2{stroke:rgba(255,132,232,.26)}
+.home-secondary.delay-b{stroke:#ff6bdf; opacity:.10}
+.sigil-holo-prism{stroke:#ff6bdf!important; opacity:.16!important}
+.sigil-holo-violet{stroke:#ff97ea!important; opacity:.18!important}
+.sigil-holo-spark{animation-duration:6.2s!important; opacity:.30!important}
+
+/* Rune is the flagship now. */
+.variant-buttons .active[data-variant="rune"]{
+  box-shadow:0 0 0 1px rgba(255,200,244,.22) inset, 0 0 20px rgba(255,107,223,.24), 0 0 26px rgba(209,10,10,.12);
+}
+.variant-buttons [data-variant="rune"]::after{
+  content:" ✦";
+  color:var(--pinkPale);
+}
+
+/* Cooler panels: slight grimoire treatment without turning the UI into a boxy mess. */
+.card,
+.side-card,
+.process-box,
+.stage-banner,
+.preview-frame.mode-sigil,
+.chamber-box{
+  border-color:rgba(255,107,223,.26);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.44),
+    inset 0 0 0 1px rgba(255,255,255,.026),
+    inset 0 0 32px rgba(255,107,223,.035);
+}
+.card{
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,107,223,.10), transparent 24%),
+    radial-gradient(circle at 100% 0%, rgba(255,63,207,.052), transparent 28%),
+    radial-gradient(circle at 50% 115%, rgba(209,10,10,.075), transparent 42%),
+    linear-gradient(180deg, rgba(20,2,11,.95), rgba(5,0,2,.88));
+}
+.side-card,
+.process-box,
+.stage-banner{
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,107,223,.075), transparent 30%),
+    linear-gradient(135deg, rgba(255,107,223,.05), transparent 35%),
+    rgba(0,0,0,.235);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.018),
+    inset 0 0 20px rgba(255,107,223,.028),
+    0 10px 28px rgba(0,0,0,.24);
+}
+.card::before,
+.side-card::before,
+.process-box::before,
+.stage-banner::before{
+  opacity:.88;
+  background:
+    linear-gradient(90deg, var(--inkRune) 0 28px, transparent 28px calc(100% - 28px), var(--inkRune) calc(100% - 28px)) top/100% 1px no-repeat,
+    linear-gradient(90deg, var(--inkRune) 0 28px, transparent 28px calc(100% - 28px), var(--inkRune) calc(100% - 28px)) bottom/100% 1px no-repeat,
+    linear-gradient(180deg, var(--inkRune) 0 28px, transparent 28px calc(100% - 28px), var(--inkRune) calc(100% - 28px)) left/1px 100% no-repeat,
+    linear-gradient(180deg, var(--inkRune) 0 28px, transparent 28px calc(100% - 28px), var(--inkRune) calc(100% - 28px)) right/1px 100% no-repeat;
+}
+.side-card::after,
+.process-box::after,
+.stage-banner::after{
+  content:"✧";
+  color:rgba(255,200,244,.28);
+  text-shadow:0 0 10px rgba(255,107,223,.34);
+}
+.section-title{
+  color:#fff1fb;
+  text-shadow:0 0 14px rgba(255,107,223,.12);
+}
+.section-title::after{
+  content:"";
+  display:block;
+  width:86px;
+  height:1px;
+  margin-top:8px;
+  background:linear-gradient(90deg, transparent, rgba(255,200,244,.55), rgba(255,107,223,.25), transparent);
+}
+.eyebrow::before,
+.process-label::before{
+  content:"✦";
+  margin-right:6px;
+  color:rgba(255,200,244,.62);
+  text-shadow:0 0 8px rgba(255,107,223,.24);
+}
+.cell.hit{
+  border-color:rgba(255,107,223,.95);
+  background:rgba(255,107,223,.19);
+  box-shadow:0 0 18px rgba(255,107,223,.24);
+}
+button.active{
+  background:linear-gradient(180deg, rgba(255,107,223,.24), rgba(122,0,60,.34)), linear-gradient(180deg, rgba(209,10,10,.62), rgba(42,5,5,.92));
+  border-color:rgba(255,200,244,.42);
+}
+button.secondary{border-color:rgba(255,107,223,.30)}
+
+@media (max-width: 760px), (pointer: coarse) and (max-width: 980px){
+  .card,
+  .side-card,
+  .process-box,
+  .stage-banner{
+    box-shadow:0 14px 36px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.018);
+  }
+  .section-title::after{width:64px;margin-top:6px}
+  .eyebrow::before,.process-label::before{display:none}
+}
+
+
+/* === V15 FINAL RITUAL CHAMBER IMPLEMENTATION === */
+:root{
+  --pink:#ff4fb8;
+  --pinkHot:#ff2f9f;
+  --pinkSoft:#ff8fd4;
+  --pinkPale:#ffd6f3;
+  --pinkDeep:#8f1d5c;
+  --purple:#ff7ac8;
+  --gold:#ff4fb8;
+  --stageGlow:rgba(255,47,159,.13);
+  --inkRune:rgba(255,79,184,.24);
+}
+body{
+  background:
+    radial-gradient(circle at 18% 8%, rgba(143,29,92,.28), transparent 28%),
+    radial-gradient(circle at 82% 0%, rgba(255,79,184,.08), transparent 20%),
+    radial-gradient(circle at 50% 120%, rgba(209,10,10,.14), transparent 42%),
+    linear-gradient(135deg,#020000,#090102 45%,#16020a);
+}
+.topbar{border-color:rgba(255,79,184,.24)}
+.mark{border-color:rgba(255,79,184,.46); box-shadow:0 0 20px rgba(255,79,184,.15), inset 0 0 18px rgba(209,10,10,.16)}
+
+/* tighter process header + connected ritual timeline */
+.process-panel{padding-top:10px; gap:8px}
+.process-panel>.eyebrow{margin-bottom:2px; font-size:9px; letter-spacing:.18em}
+.process-panel>.section-title{font-size:16px; margin-bottom:4px; line-height:1}
+.process-panel>.section-title::after{margin-top:5px; width:72px}
+.stage-pills{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  padding:4px 0 2px;
+  margin-top:0;
+}
+.stage-pills::before{
+  content:"";
+  position:absolute;
+  left:8px; right:8px; top:50%; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,143,212,.25), rgba(209,10,10,.24), transparent);
+  pointer-events:none;
+}
+.pill{
+  position:relative;
+  z-index:1;
+  padding:6px 7px;
+  border-radius:999px;
+  font-size:8.5px;
+  letter-spacing:.08em;
+  text-align:center;
+  background:linear-gradient(180deg, rgba(20,0,10,.92), rgba(0,0,0,.68));
+  border-color:rgba(255,79,184,.25);
+}
+.pill::before{
+  content:"";
+  display:inline-block;
+  width:5px; height:5px;
+  border-radius:99px;
+  margin-right:4px;
+  background:rgba(255,143,212,.32);
+  box-shadow:0 0 6px rgba(255,79,184,.18);
+  vertical-align:1px;
+}
+.pill.active{
+  color:#fff8fd;
+  border-color:rgba(255,143,212,.58);
+  background:linear-gradient(180deg, rgba(255,79,184,.18), rgba(143,29,92,.28));
+  box-shadow:0 0 16px rgba(255,79,184,.14), inset 0 0 0 1px rgba(255,255,255,.035);
+}
+.pill.active::before{background:#ff8fd4; box-shadow:0 0 10px rgba(255,79,184,.76)}
+.process-panel .process-stack{margin-top:7px!important; gap:8px}
+.process-box{min-height:54px; padding:9px 10px}
+.process-label{font-size:9px; letter-spacing:.16em; margin-bottom:5px}
+.process-value{font-size:15px}
+.process-value.small{font-size:12px}
+
+/* artifact plaques, engraved corners, subtle grimoire texture */
+.card,.side-card,.process-box,.stage-banner,.preview-frame.mode-sigil,.chamber-box{
+  border-color:rgba(255,79,184,.28);
+}
+.card::before,.side-card::before,.process-box::before,.stage-banner::before{
+  background:
+    linear-gradient(90deg, rgba(255,143,212,.30) 0 30px, transparent 30px calc(100% - 30px), rgba(255,143,212,.30) calc(100% - 30px)) top/100% 1px no-repeat,
+    linear-gradient(90deg, rgba(255,143,212,.18) 0 30px, transparent 30px calc(100% - 30px), rgba(255,143,212,.18) calc(100% - 30px)) bottom/100% 1px no-repeat,
+    linear-gradient(180deg, rgba(255,143,212,.22) 0 30px, transparent 30px calc(100% - 30px), rgba(255,143,212,.22) calc(100% - 30px)) left/1px 100% no-repeat,
+    linear-gradient(180deg, rgba(255,143,212,.18) 0 30px, transparent 30px calc(100% - 30px), rgba(255,143,212,.18) calc(100% - 30px)) right/1px 100% no-repeat;
+}
+.process-box{
+  background:
+    radial-gradient(circle at 6% 8%, rgba(255,143,212,.085), transparent 30%),
+    linear-gradient(180deg, rgba(14,0,8,.78), rgba(0,0,0,.28));
+}
+.process-box.active{
+  border-color:rgba(255,79,184,.48);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,79,184,.14), transparent 35%),
+    linear-gradient(180deg, rgba(43,0,20,.52), rgba(0,0,0,.26));
+  box-shadow:0 0 22px rgba(255,47,159,.10), inset 0 0 22px rgba(255,79,184,.038);
+}
+.process-box.ritual-pulse{
+  animation:processSealPulse .72s cubic-bezier(.12,.86,.14,1) both;
+}
+@keyframes processSealPulse{
+  0%{transform:translateX(0); filter:brightness(1)}
+  25%{transform:translateX(3px); filter:brightness(1.72)}
+  100%{transform:translateX(0); filter:brightness(1)}
+}
+
+/* intentional conduit in the dead space leading into the sigil chamber */
+.forge-stage{isolation:isolate}
+.forge-stage::before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  left:18px;
+  top:14%;
+  bottom:14%;
+  width:3px;
+  border-radius:999px;
+  pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(255,143,212,.22), rgba(255,47,159,.60), rgba(209,10,10,.42), rgba(255,143,212,.20), transparent);
+  box-shadow:0 0 14px rgba(255,79,184,.32), 0 0 34px rgba(209,10,10,.10);
+  animation:conduitBreath 3.6s ease-in-out infinite;
+}
+.forge-stage::after{
+  content:"✦\A✧\A◆\A✧\A✦";
+  white-space:pre;
+  position:absolute;
+  z-index:1;
+  left:10px;
+  top:20%;
+  bottom:20%;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  pointer-events:none;
+  color:rgba(255,214,243,.30);
+  font-size:13px;
+  text-shadow:0 0 10px rgba(255,79,184,.28);
+  animation:glyphColumnDrift 5.5s ease-in-out infinite alternate;
+}
+@keyframes conduitBreath{
+  0%,100%{opacity:.42; transform:scaleY(.96)}
+  50%{opacity:.90; transform:scaleY(1.02)}
+}
+@keyframes glyphColumnDrift{
+  0%{transform:translateY(8px); opacity:.22}
+  100%{transform:translateY(-8px); opacity:.52}
+}
+.forge-stage.final-charging::before{
+  animation:conduitSurge .92s cubic-bezier(.12,.86,.14,1) 1;
+}
+.forge-stage.final-charging::after{
+  animation:glyphSurge .92s cubic-bezier(.12,.86,.14,1) 1;
+}
+@keyframes conduitSurge{
+  0%{opacity:.34; transform:scaleY(.65)}
+  35%{opacity:1; transform:scaleY(1.08); box-shadow:0 0 24px rgba(255,143,212,.78), 0 0 64px rgba(209,10,10,.30)}
+  100%{opacity:.58; transform:scaleY(.98)}
+}
+@keyframes glyphSurge{
+  0%{opacity:.16; transform:translateY(18px) scale(.94)}
+  40%{opacity:1; transform:translateY(-6px) scale(1.08)}
+  100%{opacity:.34; transform:translateY(0) scale(1)}
+}
+
+/* chamber atmosphere: construction circles, faint radial geometry, constellation dust */
+.preview-stage::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:10px 14px;
+  border-radius:24px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 30%, rgba(255,143,212,.070) 30.4% 30.8%, transparent 31.2% 44%, rgba(255,79,184,.055) 44.4% 44.8%, transparent 45.2% 59%, rgba(232,221,208,.040) 59.3% 59.7%, transparent 60.1%),
+    repeating-conic-gradient(from -28deg at 50% 50%, rgba(255,79,184,.045) 0 1.3deg, transparent 1.3deg 18deg),
+    radial-gradient(circle at 20% 24%, rgba(255,143,212,.12) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 32%, rgba(255,143,212,.16) 0 1px, transparent 2px),
+    radial-gradient(circle at 35% 74%, rgba(255,143,212,.12) 0 1px, transparent 2px),
+    radial-gradient(circle at 66% 69%, rgba(255,143,212,.10) 0 1px, transparent 2px);
+  opacity:.70;
+  mix-blend-mode:screen;
+}
+.preview-stage::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 28% 52%, rgba(255,79,184,.22) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 49% 18%, rgba(232,221,208,.15) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 74% 46%, rgba(255,143,212,.18) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 58% 82%, rgba(255,79,184,.13) 0 1px, transparent 1.8px);
+  opacity:.60;
+  animation:runicDustFloat 7.8s ease-in-out infinite alternate;
+}
+@keyframes runicDustFloat{
+  from{transform:translate3d(0,5px,0); opacity:.32}
+  to{transform:translate3d(0,-5px,0); opacity:.68}
+}
+.preview-stage>*{position:relative; z-index:2}
+.preview-frame.mode-sigil{
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,79,184,.11), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(122,0,0,.11), transparent 58%),
+    rgba(0,0,0,.20);
+}
+
+/* premium final forge sequence */
+.chamber-screen.final-forging .summary-bar,
+.chamber-screen.final-forging .process-panel,
+.chamber-screen.final-forging .side-panel,
+.chamber-screen.final-forging .bottom-dock{
+  transition:filter .18s ease, opacity .18s ease;
+  filter:brightness(.72) saturate(1.05);
+}
+.chamber-screen.final-forging .main-panel{
+  box-shadow:0 0 0 1px rgba(255,143,212,.20) inset, 0 0 36px rgba(255,79,184,.10), 0 20px 70px rgba(0,0,0,.44);
+}
+.stage-banner.forged-glow{
+  animation:forgedBannerGlow 1.28s cubic-bezier(.12,.86,.14,1) both;
+}
+@keyframes forgedBannerGlow{
+  0%{filter:brightness(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+  25%{filter:brightness(1.85); box-shadow:0 0 26px rgba(255,79,184,.26), inset 0 0 18px rgba(255,143,212,.10)}
+  100%{filter:brightness(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+}
+
+/* export dock polish */
+.bottom-dock button{display:inline-flex; align-items:center; gap:5px; white-space:nowrap}
+.bottom-left{gap:7px}
+
+/* Astra must be slow celestial geometry, not squiggly electricity. */
+.preview-frame.variant-astral .sigil-holo-spark{
+  animation-duration:12s!important;
+  opacity:.18!important;
+  stroke-dasharray:1 26!important;
+}
+.preview-frame.variant-astral .sigil-holo-edge{opacity:.10!important}
+.preview-frame.variant-astral .sigil-holo-wide{opacity:.075!important}
+.preview-frame.variant-astral .sigil-holo-mid{opacity:.44!important}
+.preview-frame.variant-astral .sigil-holo-inner{opacity:.22!important}
+.preview-frame.variant-astral .sigil-holo-hot{opacity:.36!important}
+
+/* mobile lean mode: keep the ritual look but cut cost and stop overlap */
+@media (max-width: 760px), (pointer: coarse) and (max-width: 980px){
+  .stage-pills{grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px}
+  .pill{font-size:8px; padding:6px 5px}
+  .process-panel .process-stack{gap:7px}
+  .forge-stage::before{left:9px; width:2px; opacity:.35; animation:none}
+  .forge-stage::after{display:none}
+  .preview-stage::before{opacity:.28; inset:6px}
+  .preview-stage::after{display:none}
+  .chamber-screen.final-forging .summary-bar,
+  .chamber-screen.final-forging .process-panel,
+  .chamber-screen.final-forging .side-panel,
+  .chamber-screen.final-forging .bottom-dock{filter:none}
+  .bottom-dock button{font-size:8.5px; padding:7px 8px; gap:3px}
+  .bottom-left,.bottom-right{gap:5px}
+  .sigil-holo-edge,.sigil-holo-spark{display:none!important}
+  .sigil-holo-wide{opacity:.06!important}
+  .process-box.ritual-pulse{animation:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .forge-stage::before,.forge-stage::after,.preview-stage::after,.process-box.ritual-pulse,.stage-banner.forged-glow{animation:none!important}
+}
+
+
+
+/* === V16 USER FEEDBACK PATCH: restore simpler timeline pills, better color swatches, remove side line === */
+.pill::before{display:none!important;content:none!important}
+.pill{
+  padding:9px 14px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(232,221,208,.12)!important;
+  background:rgba(0,0,0,.18)!important;
+  color:#d8cbbb!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.09em!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)!important;
+}
+.pill.active{
+  color:#fff!important;
+  border-color:rgba(209,10,10,.62)!important;
+  background:linear-gradient(180deg, rgba(122,0,0,.20), rgba(209,10,10,.12))!important;
+  box-shadow:0 0 14px rgba(209,10,10,.16), inset 0 0 0 1px rgba(255,255,255,.03)!important;
+}
+.forge-stage::before,
+.forge-stage::after,
+.forge-stage.final-charging::before,
+.forge-stage.final-charging::after{
+  display:none!important;
+  content:none!important;
+  animation:none!important;
+}
+/* Slightly improve swatch variety without changing the overall layout */
+.swatch{
+  box-shadow:0 0 0 2px rgba(0,0,0,.35), 0 0 12px rgba(255,255,255,.04);
+}
+.swatch.active{
+  outline:2px solid rgba(232,221,208,.88)!important;
+  box-shadow:0 0 0 2px rgba(0,0,0,.35), 0 0 18px rgba(255,255,255,.10), 0 0 22px currentColor;
+}
+
+
+
+/* === V18 STARFIELD BACKDROP FIX: keep inner sigil panel black, move galaxy to big outer chamber === */
+.forge-stage{
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(73,163,255,.10), transparent 22%),
+    radial-gradient(circle at 74% 26%, rgba(255,79,184,.10), transparent 24%),
+    radial-gradient(circle at 60% 72%, rgba(73,163,255,.08), transparent 28%),
+    radial-gradient(circle at 40% 56%, rgba(209,10,10,.07), transparent 32%),
+    linear-gradient(180deg, rgba(5,2,12,.96), rgba(2,0,8,.98) 52%, rgba(1,0,5,1)) !important;
+}
+.forge-stage::before,
+.forge-stage::after{
+  content:"" !important;
+  display:block !important;
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+/* starfield layer */
+.forge-stage::before{
+  z-index:0;
+  opacity:.95;
+  background:
+    radial-gradient(circle at 6% 14%, rgba(255,255,255,.95) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 12% 62%, rgba(255,255,255,.75) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 17% 36%, rgba(255,255,255,.72) 0 .9px, transparent 1.5px),
+    radial-gradient(circle at 23% 82%, rgba(255,255,255,.88) 0 1.1px, transparent 1.7px),
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,.64) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 34% 52%, rgba(255,255,255,.82) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 39% 12%, rgba(255,255,255,.56) 0 .9px, transparent 1.5px),
+    radial-gradient(circle at 45% 72%, rgba(255,255,255,.78) 0 1.1px, transparent 1.7px),
+    radial-gradient(circle at 49% 28%, rgba(255,255,255,.62) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 54% 86%, rgba(255,255,255,.86) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 58% 18%, rgba(255,255,255,.8) 0 1.1px, transparent 1.7px),
+    radial-gradient(circle at 63% 58%, rgba(255,255,255,.65) 0 .95px, transparent 1.5px),
+    radial-gradient(circle at 68% 42%, rgba(255,255,255,.92) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 72% 8%, rgba(255,255,255,.54) 0 .9px, transparent 1.5px),
+    radial-gradient(circle at 77% 74%, rgba(255,255,255,.76) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 82% 24%, rgba(255,255,255,.84) 0 1.1px, transparent 1.7px),
+    radial-gradient(circle at 87% 52%, rgba(255,255,255,.6) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 92% 16%, rgba(255,255,255,.72) 0 .95px, transparent 1.5px),
+    radial-gradient(circle at 94% 82%, rgba(255,255,255,.9) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 31% 94%, rgba(255,255,255,.58) 0 .9px, transparent 1.5px),
+    radial-gradient(circle at 53% 4%, rgba(255,255,255,.48) 0 .8px, transparent 1.4px),
+    radial-gradient(circle at 79% 94%, rgba(255,255,255,.56) 0 .8px, transparent 1.4px);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.08));
+}
+/* nebula haze layer */
+.forge-stage::after{
+  z-index:0;
+  opacity:.88;
+  background:
+    radial-gradient(ellipse at 18% 24%, rgba(73,163,255,.18), transparent 24%),
+    radial-gradient(ellipse at 78% 28%, rgba(255,79,184,.18), transparent 26%),
+    radial-gradient(ellipse at 56% 76%, rgba(73,163,255,.11), transparent 28%),
+    radial-gradient(ellipse at 40% 58%, rgba(209,10,10,.08), transparent 32%),
+    radial-gradient(ellipse at 64% 48%, rgba(255,255,255,.035), transparent 22%);
+  mix-blend-mode:screen;
+  animation:starfieldDrift 16s ease-in-out infinite alternate;
+}
+.preview-stage,
+.preview-frame,
+.preview-frame.mode-sigil,
+.preview-svg,
+.wheel-svg{
+  position:relative;
+}
+.preview-stage{z-index:1;}
+.preview-frame.mode-sigil{
+  z-index:2;
+  background:radial-gradient(circle, rgba(122,0,0,.10), transparent 56%), rgba(0,0,0,.22) !important;
+  border:1px solid rgba(209,10,10,.16) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), 0 12px 28px rgba(0,0,0,.26);
+}
+.preview-frame.mode-sigil::before,
+.preview-frame.mode-sigil::after{
+  display:none !important;
+  content:none !important;
+}
+@keyframes starfieldDrift{
+  0%{transform:translate3d(0,0,0) scale(1); opacity:.72}
+  100%{transform:translate3d(0,-10px,0) scale(1.035); opacity:.94}
+}
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .forge-stage::after{animation:none}
+  .forge-stage::before{opacity:.82}
+}
+
+
+
+/* === V19 COHERENT SIGIL COLOR SYSTEM === */
+:root{
+  --sigil-prism:#ff6bdf;
+  --sigil-violet:#ff97ea;
+  --sigil-inner:#ffc1f3;
+  --sigil-hot:#fff6ea;
+  --sigil-spark:#ffe1f7;
+}
+.sigil-holo-prism{stroke:var(--sigil-prism)!important}
+.sigil-holo-violet{stroke:var(--sigil-violet)!important}
+.sigil-holo-inner{stroke:var(--sigil-inner)!important}
+.sigil-holo-hot{stroke:var(--sigil-hot)!important}
+.sigil-holo-spark{stroke:var(--sigil-spark)!important}
+
+
+
+/* === V20 STABLE STARFIELD HOTFIX === */
+.forge-stage::before,
+.forge-stage::after{
+  content:none !important;
+  display:none !important;
+  animation:none !important;
+}
+.forge-stage{
+  position:relative;
+  overflow:hidden;
+  background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20800'%3E%3Crect%20width='1200'%20height='800'%20fill='none'/%3E%3Cg%20fill='white'%3E%3Ccircle%20cx='64'%20cy='82'%20r='1.7'%20opacity='0.95'/%3E%3Ccircle%20cx='118'%20cy='214'%20r='1.1'%20opacity='0.82'/%3E%3Ccircle%20cx='164'%20cy='126'%20r='1.4'%20opacity='0.92'/%3E%3Ccircle%20cx='206'%20cy='332'%20r='1.2'%20opacity='0.72'/%3E%3Ccircle%20cx='248'%20cy='96'%20r='1.6'%20opacity='0.9'/%3E%3Ccircle%20cx='294'%20cy='236'%20r='1.0'%20opacity='0.76'/%3E%3Ccircle%20cx='338'%20cy='156'%20r='1.3'%20opacity='0.84'/%3E%3Ccircle%20cx='386'%20cy='402'%20r='1.5'%20opacity='0.88'/%3E%3Ccircle%20cx='428'%20cy='118'%20r='1.0'%20opacity='0.74'/%3E%3Ccircle%20cx='470'%20cy='276'%20r='1.2'%20opacity='0.86'/%3E%3Ccircle%20cx='522'%20cy='78'%20r='1.8'%20opacity='0.97'/%3E%3Ccircle%20cx='566'%20cy='194'%20r='1.0'%20opacity='0.72'/%3E%3Ccircle%20cx='618'%20cy='142'%20r='1.4'%20opacity='0.91'/%3E%3Ccircle%20cx='660'%20cy='318'%20r='1.1'%20opacity='0.8'/%3E%3Ccircle%20cx='704'%20cy='96'%20r='1.5'%20opacity='0.92'/%3E%3Ccircle%20cx='746'%20cy='232'%20r='1.0'%20opacity='0.76'/%3E%3Ccircle%20cx='796'%20cy='172'%20r='1.2'%20opacity='0.85'/%3E%3Ccircle%20cx='844'%20cy='364'%20r='1.6'%20opacity='0.89'/%3E%3Ccircle%20cx='888'%20cy='118'%20r='1.0'%20opacity='0.74'/%3E%3Ccircle%20cx='934'%20cy='252'%20r='1.2'%20opacity='0.84'/%3E%3Ccircle%20cx='982'%20cy='86'%20r='1.7'%20opacity='0.95'/%3E%3Ccircle%20cx='1038'%20cy='216'%20r='1.0'%20opacity='0.73'/%3E%3Ccircle%20cx='1082'%20cy='152'%20r='1.3'%20opacity='0.88'/%3E%3Ccircle%20cx='1128'%20cy='296'%20r='1.1'%20opacity='0.8'/%3E%3Ccircle%20cx='154'%20cy='472'%20r='1.2'%20opacity='0.8'/%3E%3Ccircle%20cx='222'%20cy='584'%20r='1.5'%20opacity='0.9'/%3E%3Ccircle%20cx='316'%20cy='526'%20r='1.1'%20opacity='0.77'/%3E%3Ccircle%20cx='404'%20cy='664'%20r='1.4'%20opacity='0.86'/%3E%3Ccircle%20cx='492'%20cy='482'%20r='1.0'%20opacity='0.72'/%3E%3Ccircle%20cx='578'%20cy='618'%20r='1.3'%20opacity='0.88'/%3E%3Ccircle%20cx='668'%20cy='502'%20r='1.1'%20opacity='0.78'/%3E%3Ccircle%20cx='756'%20cy='632'%20r='1.6'%20opacity='0.92'/%3E%3Ccircle%20cx='844'%20cy='524'%20r='1.0'%20opacity='0.74'/%3E%3Ccircle%20cx='930'%20cy='676'%20r='1.3'%20opacity='0.86'/%3E%3Ccircle%20cx='1018'%20cy='556'%20r='1.1'%20opacity='0.8'/%3E%3Ccircle%20cx='1102'%20cy='702'%20r='1.5'%20opacity='0.93'/%3E%3Ccircle%20cx='86'%20cy='702'%20r='1.1'%20opacity='0.76'/%3E%3Ccircle%20cx='278'%20cy='732'%20r='1.0'%20opacity='0.7'/%3E%3Ccircle%20cx='514'%20cy='742'%20r='1.2'%20opacity='0.82'/%3E%3Ccircle%20cx='712'%20cy='736'%20r='1.1'%20opacity='0.76'/%3E%3Ccircle%20cx='896'%20cy='748'%20r='1.2'%20opacity='0.82'/%3E%3Ccircle%20cx='1068'%20cy='746'%20r='1.0'%20opacity='0.72'/%3E%3C/g%3E%3Cg%20fill='white'%20opacity='0.36'%3E%3Ccircle%20cx='132'%20cy='148'%20r='2.6'/%3E%3Ccircle%20cx='362'%20cy='96'%20r='2.4'/%3E%3Ccircle%20cx='612'%20cy='206'%20r='2.8'/%3E%3Ccircle%20cx='868'%20cy='148'%20r='2.5'/%3E%3Ccircle%20cx='1044'%20cy='338'%20r='2.7'/%3E%3Ccircle%20cx='286'%20cy='448'%20r='2.6'/%3E%3Ccircle%20cx='582'%20cy='554'%20r='2.4'/%3E%3Ccircle%20cx='826'%20cy='614'%20r='2.8'/%3E%3Ccircle%20cx='1008'%20cy='468'%20r='2.5'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 18% 28%, rgba(74,163,255,.16), transparent 24%),
+    radial-gradient(ellipse at 76% 26%, rgba(255,79,184,.14), transparent 26%),
+    radial-gradient(ellipse at 58% 74%, rgba(74,163,255,.08), transparent 28%),
+    radial-gradient(ellipse at 36% 68%, rgba(209,10,10,.07), transparent 34%),
+    linear-gradient(180deg, rgba(7,4,16,.98), rgba(4,1,10,.99) 50%, rgba(2,0,6,1));
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-size:cover, auto, auto, auto, auto, auto;
+  background-position:center center, center, center, center, center, center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), inset 0 0 90px rgba(73,163,255,.03);
+}
+.preview-stage{
+  position:relative;
+  z-index:1;
+}
+.preview-frame.mode-sigil{
+  background:radial-gradient(circle, rgba(122,0,0,.08), transparent 56%), rgba(0,0,0,.22) !important;
+  border:1px solid rgba(209,10,10,.16) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 24px rgba(0,0,0,.25);
+}
+.preview-frame.mode-sigil::before,
+.preview-frame.mode-sigil::after{
+  content:none !important;
+  display:none !important;
+}
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .forge-stage{
+    background-size:cover, auto, auto, auto, auto, auto;
+  }
+}
+
+
+/* === V21 BLACK BACKDROP + CONTROL DE-CLUMP PASS ===
+   PRD intent: restore the forge chamber to clean black by default, stop mashed controls,
+   and add explicit background / relic-geometry toggles. */
+body{
+  background:#020000 !important;
+}
+body::before{
+  background:none !important;
+  opacity:0 !important;
+}
+.forge-stage,
+.forge-stage.ritual{
+  background:#030000 !important;
+  background-image:none !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018), inset 0 0 70px rgba(209,10,10,.035) !important;
+}
+.forge-stage::before,
+.forge-stage::after{
+  content:none !important;
+  display:none !important;
+  animation:none !important;
+  background:none !important;
+}
+.preview-stage::before,
+.preview-stage::after{
+  content:none !important;
+  display:none !important;
+  animation:none !important;
+  background:none !important;
+}
+.preview-frame.mode-sigil{
+  background:rgba(0,0,0,.48) !important;
+  border:1px solid rgba(255,79,184,.16) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018), 0 10px 28px rgba(0,0,0,.34) !important;
+}
+.forge-stage[data-bg="black"],
+.forge-stage[data-bg="black"].ritual{
+  background:#030000 !important;
+  background-image:none !important;
+}
+.forge-stage[data-bg="stars"],
+.forge-stage[data-bg="stars"].ritual{
+  background-image:
+    radial-gradient(circle at 9% 14%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 19% 68%, rgba(255,255,255,.48) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 31% 26%, rgba(255,255,255,.60) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 48% 78%, rgba(255,255,255,.50) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 61% 18%, rgba(255,255,255,.66) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 79% 58%, rgba(255,255,255,.44) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 91% 29%, rgba(255,255,255,.58) 0 1px, transparent 1.8px),
+    linear-gradient(180deg,#030000,#020000) !important;
+}
+.forge-stage[data-bg="nebula"],
+.forge-stage[data-bg="nebula"].ritual{
+  background-image:
+    radial-gradient(ellipse at 18% 22%, rgba(72,134,255,.085), transparent 27%),
+    radial-gradient(ellipse at 78% 32%, rgba(255,79,184,.075), transparent 29%),
+    radial-gradient(ellipse at 52% 76%, rgba(209,10,10,.065), transparent 34%),
+    linear-gradient(180deg,#030006,#020000 62%,#010000) !important;
+}
+.bg-mode-buttons{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.bg-mode-buttons button,
+.variant-buttons button,
+.preview-modes button{
+  min-width:0;
+  justify-content:center;
+}
+.stage-pills{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  gap:8px !important;
+  padding:4px 2px 8px !important;
+  margin-right:-2px;
+  scrollbar-width:thin;
+}
+.stage-pills::before{display:none !important; content:none !important}
+.stage-pills .pill{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+  min-width:max-content !important;
+  text-align:center !important;
+  line-height:1 !important;
+}
+.variant-buttons,
+.preview-modes{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px !important;
+}
+.side-panel button.small,
+.side-card button.small{
+  width:100%;
+  min-height:34px;
+  padding:8px 9px;
+  line-height:1.05;
+}
+.bottom-dock button{
+  min-height:34px;
+  flex:0 0 auto;
+}
+.bottom-left,.bottom-right{
+  align-items:center;
+}
+#relicDecorBtn.active{
+  background:linear-gradient(180deg, rgba(255,79,184,.18), rgba(122,0,0,.24)) !important;
+  border-color:rgba(255,143,212,.48) !important;
+}
+#relicDecorBtn:not(.active)::after{
+  content:' OFF';
+  color:rgba(255,214,243,.56);
+}
+#relicDecorBtn.active::after{
+  content:' ON';
+  color:rgba(255,214,243,.92);
+}
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .stage-pills{gap:6px !important; padding-bottom:9px !important;}
+  .stage-pills .pill{font-size:8.5px !important; padding:8px 10px !important;}
+  .variant-buttons,.preview-modes,.bg-mode-buttons{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .bg-mode-buttons button:first-child{grid-column:1 / -1;}
+  .bottom-left,.bottom-right{width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr));}
+  .bottom-dock button{width:100%; justify-content:center;}
+}
+
+
+
+/* === V22 RETRY PATCH: unclipped right controls + real visible backgrounds ===
+   PRD: remove pointless live mapping, stop flex-card clipping, make Stars/Nebula obviously visible. */
+.side-panel.card{
+  display:block !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  padding-right:12px !important;
+  scroll-padding-bottom:56px;
+}
+.side-card{
+  display:block !important;
+  flex:0 0 auto !important;
+  min-height:auto !important;
+  height:auto !important;
+  overflow:visible !important;
+  margin-bottom:10px !important;
+}
+.side-card + .side-card{margin-top:0 !important;}
+.side-card:last-child{margin-bottom:54px !important;}
+#alphabetGrid{display:none !important;}
+.side-card .eyebrow{line-height:1.15 !important; margin-bottom:10px !important;}
+.side-card .swatches{
+  display:grid !important;
+  grid-template-columns:repeat(6,minmax(34px,1fr));
+  gap:10px !important;
+  align-items:center !important;
+  overflow:visible !important;
+}
+.side-card .swatch{
+  width:clamp(34px,3.4vw,46px) !important;
+  height:clamp(34px,3.4vw,46px) !important;
+  min-width:34px !important;
+  min-height:34px !important;
+}
+.variant-buttons,
+.preview-modes,
+.bg-mode-buttons{
+  overflow:visible !important;
+  align-items:stretch !important;
+}
+.variant-buttons button,
+.preview-modes button,
+.bg-mode-buttons button{
+  min-height:42px !important;
+  height:auto !important;
+  padding:11px 10px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+.preview-modes{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+.preview-modes button:last-child:nth-child(odd){grid-column:1 / -1;}
+.bg-mode-buttons{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+.transparent-note{line-height:1.35 !important;}
+
+/* Keep the default chamber truly black. */
+.forge-stage[data-bg="black"],
+.forge-stage[data-bg="black"].ritual{
+  background:#020000 !important;
+  background-image:none !important;
+}
+.forge-stage[data-bg="black"] .preview-frame.mode-sigil{
+  background-color:#020000 !important;
+  background-image:none !important;
+}
+
+/* Dense starfield: repeated micro-stars, not 3 lonely dots. */
+.forge-stage[data-bg="stars"],
+.forge-stage[data-bg="stars"].ritual,
+.forge-stage[data-bg="stars"] .preview-frame.mode-sigil{
+  background-color:#020000 !important;
+  background-image:
+    radial-gradient(circle at 16px 22px, rgba(255,255,255,.95) 0 1.15px, transparent 1.75px),
+    radial-gradient(circle at 68px 44px, rgba(255,214,243,.70) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 39px 76px, rgba(255,255,255,.54) 0 .85px, transparent 1.45px),
+    radial-gradient(circle at 101px 17px, rgba(255,143,212,.44) 0 .75px, transparent 1.35px),
+    radial-gradient(circle at 122px 96px, rgba(255,255,255,.40) 0 .75px, transparent 1.35px),
+    linear-gradient(180deg,#030000,#010000) !important;
+  background-size:118px 92px, 154px 126px, 206px 168px, 248px 190px, 318px 250px, auto !important;
+  background-position:0 0, 23px 14px, 41px 66px, 9px 38px, 76px 21px, 0 0 !important;
+  background-repeat:repeat, repeat, repeat, repeat, repeat, no-repeat !important;
+}
+
+/* Visible nebula mode: smoky red/pink/blue plus the same star grain. */
+.forge-stage[data-bg="nebula"],
+.forge-stage[data-bg="nebula"].ritual,
+.forge-stage[data-bg="nebula"] .preview-frame.mode-sigil{
+  background-color:#020000 !important;
+  background-image:
+    radial-gradient(ellipse at 18% 22%, rgba(41,120,255,.32), transparent 38%),
+    radial-gradient(ellipse at 76% 28%, rgba(255,79,184,.34), transparent 40%),
+    radial-gradient(ellipse at 52% 76%, rgba(209,10,10,.28), transparent 45%),
+    radial-gradient(ellipse at 35% 52%, rgba(255,143,212,.16), transparent 35%),
+    radial-gradient(circle at 16px 22px, rgba(255,255,255,.80) 0 1px, transparent 1.65px),
+    radial-gradient(circle at 68px 44px, rgba(255,214,243,.55) 0 .9px, transparent 1.55px),
+    radial-gradient(circle at 39px 76px, rgba(255,255,255,.36) 0 .75px, transparent 1.35px),
+    linear-gradient(180deg,#020006,#020000 58%,#010000) !important;
+  background-size:auto, auto, auto, auto, 118px 92px, 154px 126px, 206px 168px, auto !important;
+  background-position:center, center, center, center, 0 0, 23px 14px, 41px 66px, 0 0 !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, no-repeat !important;
+}
+.forge-stage[data-bg="stars"] .preview-frame.mode-sigil,
+.forge-stage[data-bg="nebula"] .preview-frame.mode-sigil{
+  box-shadow:inset 0 0 90px rgba(0,0,0,.30), 0 10px 28px rgba(0,0,0,.34) !important;
+}
+
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .side-panel.card{padding-right:10px !important;}
+  .side-card{margin-bottom:9px !important;}
+  .side-card .swatches{grid-template-columns:repeat(3,minmax(40px,1fr)); gap:12px !important;}
+  .side-card .swatch{width:44px !important; height:44px !important;}
+  .variant-buttons button,.preview-modes button,.bg-mode-buttons button{min-height:44px !important; padding:12px 9px !important;}
+  .bg-mode-buttons{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+  .bg-mode-buttons button:first-child{grid-column:auto !important;}
+}
+
+
+
+/* === V23 FINAL FIT PATCH: compact color tray + unclipped control boxes ===
+   Goal: make the right-side controls fit cleanly in the box. The color tray is now
+   a true one-row palette, the dead helper copy is removed, and variant buttons stay visible. */
+.side-panel.card{
+  padding:10px 10px 10px 10px !important;
+  scrollbar-gutter:stable !important;
+}
+.side-panel .side-card:first-child{
+  padding:10px 10px 11px !important;
+  margin-bottom:8px !important;
+}
+.side-panel .side-card:first-child .eyebrow{
+  margin-bottom:8px !important;
+}
+.side-panel .side-card:first-child .transparent-note{
+  display:none !important;
+}
+.side-panel .swatches#sideSwatches{
+  display:grid !important;
+  grid-template-columns:repeat(7, minmax(0, 1fr)) !important;
+  gap:6px !important;
+  align-items:center !important;
+  justify-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  padding:0 2px !important;
+}
+.side-panel .swatches#sideSwatches .swatch{
+  width:clamp(25px, 2.45vw, 34px) !important;
+  height:clamp(25px, 2.45vw, 34px) !important;
+  min-width:25px !important;
+  min-height:25px !important;
+  max-width:34px !important;
+  max-height:34px !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.16), 0 0 10px rgba(255,79,184,.10) !important;
+}
+.side-panel .swatches#sideSwatches .swatch.active{
+  outline:2px solid rgba(255,230,252,.80) !important;
+  outline-offset:2px !important;
+  box-shadow:0 0 0 1px rgba(0,0,0,.65), 0 0 14px rgba(255,255,255,.26) !important;
+}
+.side-panel .side-card:nth-of-type(2),
+.side-panel .side-card:nth-of-type(3),
+.side-panel .side-card:nth-of-type(4),
+.side-panel .side-card:nth-of-type(5){
+  padding:10px !important;
+  margin-bottom:8px !important;
+}
+.side-panel .variant-buttons,
+.side-panel .preview-modes,
+.side-panel .bg-mode-buttons{
+  display:grid !important;
+  gap:8px !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+.side-panel .variant-buttons{
+  grid-template-columns:repeat(2, minmax(0,1fr)) !important;
+}
+.side-panel .variant-buttons button,
+.side-panel .preview-modes button,
+.side-panel .bg-mode-buttons button{
+  min-width:0 !important;
+  min-height:38px !important;
+  padding:9px 8px !important;
+  border-radius:14px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+}
+.side-panel .variant-buttons [data-variant="rune"]::after{
+  content:"" !important;
+}
+.side-panel .eyebrow{
+  font-size:9.5px !important;
+  letter-spacing:.15em !important;
+}
+.side-panel .transparent-note{
+  font-size:10.5px !important;
+}
+
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .side-panel.card{
+    padding-right:9px !important;
+    padding-left:9px !important;
+  }
+  .side-panel .swatches#sideSwatches{
+    grid-template-columns:repeat(7, minmax(0,1fr)) !important;
+    gap:5px !important;
+    padding:0 1px !important;
+  }
+  .side-panel .swatches#sideSwatches .swatch{
+    width:30px !important;
+    height:30px !important;
+    min-width:30px !important;
+    min-height:30px !important;
+  }
+  .side-panel .variant-buttons button,
+  .side-panel .preview-modes button,
+  .side-panel .bg-mode-buttons button{
+    min-height:38px !important;
+    padding:9px 7px !important;
+    font-size:9.5px !important;
+  }
+}
+
+@media (max-width:420px){
+  .side-panel .swatches#sideSwatches .swatch{
+    width:26px !important;
+    height:26px !important;
+    min-width:26px !important;
+    min-height:26px !important;
+  }
+  .side-panel .swatches#sideSwatches{gap:4px !important;}
+}
+
+
+/* === V24 FINAL MAGIC PASS: export pack + SIGIL SEALED moment + background intensity ===
+   Additive only. No layout, typography, color-theme, or sigil-algorithm changes. */
+
+/* --- 3) Background intensity: an inset shade dims Stars/Nebula behind the sigil.
+       0 = nearly black, 100 = full current strength. Black mode stays clean black
+       because these rules only match [data-bg="stars"] and [data-bg="nebula"]. --- */
+.forge-stage[data-bg="stars"],
+.forge-stage[data-bg="stars"].ritual,
+.forge-stage[data-bg="nebula"],
+.forge-stage[data-bg="nebula"].ritual{
+  box-shadow:
+    inset 0 0 0 9999px rgba(2,0,0, var(--bgDim, 0)),
+    inset 0 0 0 1px rgba(255,255,255,.018) !important;
+}
+.forge-stage[data-bg="stars"] .preview-frame.mode-sigil,
+.forge-stage[data-bg="nebula"] .preview-frame.mode-sigil{
+  box-shadow:
+    inset 0 0 0 9999px rgba(2,0,0, var(--bgDim, 0)),
+    inset 0 0 90px rgba(0,0,0,.30),
+    0 10px 28px rgba(0,0,0,.34) !important;
+}
+.bg-intensity-row{margin-top:10px}
+.bg-intensity-row .eyebrow{margin-bottom:7px !important}
+#bgIntensity{
+  display:block;
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  appearance:none;
+  -webkit-appearance:none;
+  height:6px;
+  margin:2px 0 0;
+  border-radius:999px;
+  border:1px solid rgba(255,107,223,.22);
+  background:linear-gradient(90deg, rgba(255,79,184,.14), rgba(255,79,184,.52));
+  outline:none;
+  cursor:pointer;
+  accent-color:#ff4fb8;
+}
+#bgIntensity::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#ff6bdf;
+  border:1px solid rgba(255,230,252,.55);
+  box-shadow:0 0 10px rgba(255,79,184,.45);
+  cursor:pointer;
+}
+#bgIntensity::-moz-range-thumb{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#ff6bdf;
+  border:1px solid rgba(255,230,252,.55);
+  box-shadow:0 0 10px rgba(255,79,184,.45);
+  cursor:pointer;
+}
+#bgIntensity:focus-visible{
+  box-shadow:0 0 0 3px rgba(255,79,184,.22);
+}
+
+/* --- 2) SIGIL SEALED completion moment: one-shot node flash + single pulse + brief shimmer. --- */
+.node-circle.seal-flash{
+  fill:rgba(209,10,10,.50);
+  stroke:#ffe6fb;
+  filter:drop-shadow(0 0 12px var(--sigil));
+}
+.preview-frame.seal-pulse .preview-svg{
+  animation:sealPulse .9s cubic-bezier(.2,.85,.15,1) 1;
+  transform-origin:center;
+}
+@keyframes sealPulse{
+  0%{transform:scale(1); filter:brightness(1)}
+  32%{transform:scale(1.05); filter:brightness(1.8) saturate(1.18)}
+  62%{transform:scale(.995); filter:brightness(1.2)}
+  100%{transform:scale(1); filter:brightness(1)}
+}
+.seal-shimmer-layer{
+  position:absolute;
+  inset:0;
+  z-index:8;
+  pointer-events:none;
+  border-radius:inherit;
+  overflow:hidden;
+  background:linear-gradient(115deg, transparent 32%, rgba(255,255,255,.14) 46%, rgba(255,214,243,.26) 50%, rgba(255,255,255,.14) 54%, transparent 68%);
+  background-size:240% 100%;
+  background-position:130% 0;
+  mix-blend-mode:screen;
+  animation:sealShimmerSweep .85s ease-out 1 forwards;
+}
+@keyframes sealShimmerSweep{
+  0%{background-position:130% 0; opacity:0}
+  18%{opacity:1}
+  100%{background-position:-130% 0; opacity:0}
+}
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .preview-frame.seal-pulse .preview-svg{animation-duration:.6s}
+  .seal-shimmer-layer{animation-duration:.6s}
+}
+@media (prefers-reduced-motion: reduce){
+  .preview-frame.seal-pulse .preview-svg{animation:none !important}
+  .seal-shimmer-layer{display:none !important}
+  .node-circle.seal-flash{filter:none}
+}
+
+/* --- 1) Export pack button lives in the existing bottom dock; no dock layout changes needed. --- */
+#exportPackBtn{white-space:nowrap}
+
+
+/* === V24.1 FIX PASS: smaller side-panel color circles, nothing escapes the box === */
+.side-panel .swatches#sideSwatches{
+  gap:5px !important;
+  padding:3px 4px !important;
+}
+.side-panel .swatches#sideSwatches .swatch{
+  width:clamp(20px, 1.9vw, 27px) !important;
+  height:clamp(20px, 1.9vw, 27px) !important;
+  min-width:20px !important;
+  min-height:20px !important;
+  max-width:27px !important;
+  max-height:27px !important;
+}
+.side-panel .swatches#sideSwatches .swatch.active{
+  outline:2px solid rgba(255,230,252,.80) !important;
+  outline-offset:1px !important;
+}
+@media (max-width:760px), (pointer:coarse) and (max-width:980px){
+  .side-panel .swatches#sideSwatches{gap:5px !important; padding:3px 4px !important;}
+  .side-panel .swatches#sideSwatches .swatch{
+    width:28px !important;
+    height:28px !important;
+    min-width:28px !important;
+    min-height:28px !important;
+    max-width:28px !important;
+    max-height:28px !important;
+  }
+}
+@media (max-width:420px){
+  .side-panel .swatches#sideSwatches .swatch{
+    width:24px !important;
+    height:24px !important;
+    min-width:24px !important;
+    min-height:24px !important;
+    max-width:24px !important;
+    max-height:24px !important;
+  }
+}
+
+</style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="4"/><path d="M50 10 L72 76 L16 35 L84 35 L28 76 Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h1>Sigil Studio</h1>
+          <div class="subtitle">One-screen ritual chamber — clean controls pass</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="secondary small" id="openGalleryTop">Gallery</button>
+        <button class="ghost small" id="editFromTop">Edit Intention</button>
+        <button class="secondary small" id="replayTop">Replay Ritual</button>
+      </div>
+    </header>
+
+    <section class="shell">
+      <section class="screen input-screen active" id="inputScreen">
+        <aside class="card input-panel">
+          <div>
+            <div class="eyebrow">Rune-first sigil engine</div>
+            <h2 class="section-title">Intention Forge</h2>
+            <p class="copy">Type the phrase first. Then press <strong>Generate Sigil</strong> and the chamber will show the full forging ritual step by step — no scrolling.</p>
+          </div>
+
+          <div>
+            <label for="intentInput">Intention</label>
+            <textarea id="intentInput" spellcheck="false">I trust myself</textarea>
+          </div>
+
+          <div class="row" style="margin-top:2px">
+            <button class="primary" id="generateBtnTop">Generate Sigil</button>
+          </div>
+
+          <div class="row" style="justify-content:space-between">
+            <label class="toggle"><input type="checkbox" id="yVowelToggle"> Treat Y as vowel</label>
+            <label class="toggle"><input type="checkbox" id="hideGuidesToggle"> Hide guides</label>
+          </div>
+          <label class="toggle"><input type="checkbox" id="ritualModeToggle" checked> Ritual mode ambience</label>
+
+          <div>
+            <label>Curated sigil colors</label>
+            <div class="swatches" id="swatches"></div>
+            <div class="row" style="margin-top:8px"><input type="color" id="colorPicker" value="#d10a0a" aria-label="Custom sigil color"><div class="copy">Custom color still works, but the curated set is the default vibe.</div></div>
+          </div>
+
+          <div class="notice">Base chart stays locked: A=1 through I=9, then J resets to 1. Wheel stays locked with <strong>1 at 12 o’clock</strong>.</div>
+
+          <div class="input-footer">
+            <button class="primary" id="generateBtn">Generate Sigil</button>
+            <button class="secondary" id="clearBtn">Clear</button>
+            <button class="ghost" id="openGalleryInput">Gallery</button>
+          </div>
+        </aside>
+
+        <section class="card preview-shell">
+          <div class="dormant-copy">
+            <div>
+              <div class="eyebrow">Dormant chamber</div>
+              <h2 class="section-title">The wheel waits</h2>
+              <div class="copy">Press Generate and the chamber swaps into full forge mode immediately.</div>
+            </div>
+            <div class="compact-chart" style="max-width:290px;width:100%">
+              <div class="eyebrow">Visible 1–9 alphabet chart</div>
+              <div class="mini-grid" id="compactAlphabet"></div>
+            </div>
+          </div>
+          <div class="chamber-box" id="dormantChamber">
+            <svg class="wheel-svg dormant-wheel-svg" id="dormantWheel" viewBox="0 0 560 560" role="img" aria-label="Dormant sigil wheel"></svg>
+
+            <svg class="home-sigil-hero" id="homeSigilHero" viewBox="0 0 560 560" aria-hidden="true">
+              <defs>
+                <radialGradient id="homeGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="var(--sigil)" stop-opacity=".28"/>
+                  <stop offset="58%" stop-color="#ff5adf" stop-opacity=".12"/>
+                  <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                </radialGradient>
+                <filter id="homeSigilGlow">
+                  <feGaussianBlur stdDeviation="5" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <circle cx="280" cy="280" r="218" fill="url(#homeGlow)" opacity=".9"/>
+              <circle class="home-orbit home-orbit-1" cx="280" cy="280" r="176"/>
+              <circle class="home-orbit home-orbit-2" cx="280" cy="280" r="108"/>
+              <path class="home-draw home-main" pathLength="1" d="M280 90 L356 382 L146 190 L414 190 L204 382 Z"/>
+              <path class="home-draw home-secondary" pathLength="1" d="M180 300 C230 185 330 185 380 300 C326 255 234 255 180 300"/>
+              <path class="home-draw home-secondary delay-a" pathLength="1" d="M280 115 L280 445 M205 250 L355 250 M232 356 L328 356"/>
+              <path class="home-draw home-secondary delay-b" pathLength="1" d="M202 202 L358 358 M358 202 L202 358"/>
+              <circle class="home-node n1" cx="280" cy="90" r="8"/>
+              <circle class="home-node n2" cx="356" cy="382" r="8"/>
+              <circle class="home-node n3" cx="146" cy="190" r="8"/>
+              <circle class="home-node n4" cx="414" cy="190" r="8"/>
+              <circle class="home-node n5" cx="204" cy="382" r="8"/>
+            </svg>
+
+            <div class="ambient-sigil-layer" id="ambientLayer" aria-hidden="true"></div>
+            <div class="ignite-core" aria-hidden="true"></div>
+            <div class="dormant-prompt">Enter intention. Ignite the forge.</div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen chamber-screen" id="chamberScreen">
+        <div class="card summary-bar">
+          <div>
+            <div class="eyebrow">Collapsed input tray</div>
+            <div class="summary-text"><span class="muted">Intention:</span> <span id="summaryIntent">I TRUST MYSELF</span> &nbsp;•&nbsp; <span class="muted">Color:</span> <span id="summaryColor">Red</span> &nbsp;•&nbsp; <span class="muted">Mode:</span> Classic Wheel</div>
+          </div>
+          <div class="row">
+            <button class="ghost small" id="editBtn">Edit</button>
+            <button class="secondary small" id="replayBtn">Replay</button>
+            <button class="secondary small" id="openGalleryChamber">Gallery</button>
+          </div>
+        </div>
+
+        <div class="chamber-layout">
+          <aside class="card process-panel">
+            <div class="eyebrow">Forging timeline</div>
+            <h2 class="section-title">Process</h2>
+            <div class="stage-pills" id="stagePills">
+              <div class="pill active" data-stage="input">Input</div>
+              <div class="pill" data-stage="vowels">Vowels</div>
+              <div class="pill" data-stage="duplicates">Duplicates</div>
+              <div class="pill" data-stage="mapping">Mapping</div>
+              <div class="pill" data-stage="draw">Draw</div>
+              <div class="pill" data-stage="seal">Seal</div>
+              <div class="pill" data-stage="final">Final</div>
+            </div>
+            <div class="process-stack" style="margin-top:10px">
+              <div class="process-box" id="boxOriginal"><div class="process-label">Original Incantation</div><div class="process-value" id="originalText">—</div></div>
+              <div class="process-box" id="boxVowels"><div class="process-label">Vowels Banished</div><div class="process-value" id="vowelText">—</div></div>
+              <div class="process-box" id="boxDuplicates"><div class="process-label">Duplicates sealed</div><div class="process-value" id="duplicateText">—</div></div>
+              <div class="process-box" id="boxPath"><div class="process-label">Numeral Path</div><div class="process-value small" id="pathText">—</div></div>
+            </div>
+          </aside>
+
+          <section class="card main-panel">
+            <div class="hero">
+              <div class="stage-banner">
+                <div>
+                  <div class="eyebrow">Main chamber</div>
+                  <div class="stage-title" id="stageTitle">Awaiting ignition</div>
+                </div>
+                <div class="status" id="statusText">Ready</div>
+              </div>
+              <div class="forge-stage ritual" id="forgeStage">
+                <div class="preview-stage" id="previewStage">
+                  <div class="preview-frame mode-sigil" id="previewFrame">
+                    <svg class="wheel-svg preview-svg" id="wheelSvg" viewBox="0 0 560 560" role="img" aria-label="Circular sigil wheel with 1 at 12 o'clock"></svg>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="helper-line" id="helperLine">Press generate to see the sigil forged step by step.</div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="card side-panel">
+            <div class="side-card">
+              <div class="eyebrow">Sigil color</div>
+              <div class="swatches" id="sideSwatches"></div>
+              <div class="transparent-note" style="margin-top:8px">Change color after forging. This updates the current sigil live.</div>
+            </div>
+
+            <div id="alphabetGrid" class="hidden" aria-hidden="true"></div>
+            <div class="side-card">
+              <div class="eyebrow">Variants</div>
+              <div class="variant-buttons" id="variantButtons">
+                <button class="small active" data-variant="rune">Rune</button>
+                <button class="small secondary" data-variant="astral">Astra</button>
+                <button class="small secondary" data-variant="relic">Relic</button>
+                <button class="small secondary" data-variant="raw">Raw</button>
+              </div>
+            </div>
+            <div class="side-card">
+              <div class="eyebrow">Preview mode</div>
+              <div class="preview-modes" id="previewModes">
+                <button class="small active" data-preview="sigil">Sigil</button>
+                <button class="small secondary" data-preview="phone">Phone</button>
+                <button class="small secondary" data-preview="desktop">Desktop</button>
+                <button class="small secondary" data-preview="shirt">Shirt</button>
+                <button class="small secondary" data-preview="poster">Poster</button>
+              </div>
+            </div>
+
+            <div class="side-card">
+              <div class="eyebrow">Chamber background</div>
+              <div class="bg-mode-buttons" id="bgModeButtons">
+                <button class="small active" data-bgmode="black">Black</button>
+                <button class="small secondary" data-bgmode="stars">Stars</button>
+                <button class="small secondary" data-bgmode="nebula">Nebula</button>
+              </div>
+              <div class="transparent-note" style="margin-top:8px">Default is plain black. Turn stars or nebula on only when you want atmosphere.</div>
+              <div class="bg-intensity-row">
+                <div class="eyebrow">Background intensity — <span id="bgIntensityValue">100</span></div>
+                <input type="range" id="bgIntensity" min="0" max="100" step="1" value="100" aria-label="Background intensity for Stars and Nebula modes">
+              </div>
+              <div class="row" style="margin-top:8px"><button class="small ghost" id="relicDecorBtn">Relic Geometry</button></div>
+            </div>
+
+            <div class="side-card">
+              <div class="eyebrow">Transparent export</div>
+              <div class="transparent-note">Transparent preview affects what you see, not the forge itself.</div>
+              <div class="row" style="margin-top:8px"><button class="small ghost" id="transparentPreviewBtn">Toggle</button></div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="card bottom-dock">
+          <div class="bottom-left">
+            <button class="small" id="exportPngBtn">🖼 PNG</button>
+            <button class="small" id="exportTransparentBtn">◻ Transparent</button>
+            <button class="small secondary" id="exportSvgBtn">◈ SVG</button>
+            <button class="small secondary" id="printBtn">🖨 Print</button>
+            <button class="small secondary" id="saveBtn">💾 Save</button>
+            <button class="small" id="exportPackBtn">📦 Export Pack</button>
+          </div>
+          <div class="bottom-right">
+            <button class="small ghost" id="backToInputBtn">Back to Input</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="overlay" id="galleryOverlay">
+        <div class="modal">
+          <div class="card modal-head">
+            <div>
+              <div class="eyebrow">Local gallery</div>
+              <h2 class="section-title">Saved Sigils</h2>
+            </div>
+            <div class="row">
+              <button class="ghost small" id="clearGalleryBtn">Clear Gallery</button>
+              <button class="secondary small" id="closeGalleryBtn">Close</button>
+            </div>
+          </div>
+          <div class="card" style="min-height:0; overflow:hidden">
+            <div class="gallery-grid" id="gallery"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="print-card" id="printCard">
+    <div class="print-inner">
+      <div class="print-title">Sigil Studio</div>
+      <div class="print-sigil" id="printSigil"></div>
+      <div class="print-meta" id="printMeta"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  const STORAGE_KEY = 'sigil_studio_gallery_v3';
+  const colors = [
+    {hex:'#d10a0a',label:'Blood Red'},
+    {hex:'#ff4fb8',label:'Ritual Pink'},
+    {hex:'#4ba3ff',label:'Electric Blue'},
+    {hex:'#39d98a',label:'Emerald Green'},
+    {hex:'#ffffff',label:'White'},
+    {hex:'#111111',label:'Black'},
+    {hex:'#b8bcc8',label:'Silver'}
+  ];
+
+  let state = {raw:'', clean:'', noVowels:'', reduced:'', letters:[], nums:[]};
+  let currentVariant = 'rune';
+  let previewMode = 'sigil';
+  let sigilColor = '#d10a0a';
+  let sigilColorLabel = 'Blood Red';
+  let transparentPreview = false;
+  let stageBackground = 'black';
+  let relicDecor = false;
+  let currentScreen = 'input';
+  let timers = [];
+
+  const inputScreen = $('inputScreen');
+  const chamberScreen = $('chamberScreen');
+  const galleryOverlay = $('galleryOverlay');
+  const intentInput = $('intentInput');
+  const yVowelToggle = $('yVowelToggle');
+  const hideGuidesToggle = $('hideGuidesToggle');
+  const ritualModeToggle = $('ritualModeToggle');
+  const originalText = $('originalText');
+  const vowelText = $('vowelText');
+  const duplicateText = $('duplicateText');
+  const pathText = $('pathText');
+  const stageTitle = $('stageTitle');
+  const statusText = $('statusText');
+  const helperLine = $('helperLine');
+  const forgeStage = $('forgeStage');
+  let wheelSvg = $('wheelSvg');
+  const dormantWheel = $('dormantWheel');
+  const dormantChamber = $('dormantChamber');
+  const ambientLayer = $('ambientLayer');
+  const alphabetGrid = $('alphabetGrid');
+  const compactAlphabet = $('compactAlphabet');
+  const swatches = $('swatches');
+  const sideSwatches = $('sideSwatches');
+  const colorPicker = $('colorPicker');
+  const previewFrame = $('previewFrame');
+  const previewStage = $('previewStage');
+  const summaryIntent = $('summaryIntent');
+  const summaryColor = $('summaryColor');
+  const gallery = $('gallery');
+  const printSigil = $('printSigil');
+  const printMeta = $('printMeta');
+
+  function clearTimers(){ timers.forEach(t=>clearTimeout(t)); timers=[]; }
+  function setStatus(s){ statusText.textContent = s; }
+  function setStageTitle(s){ stageTitle.textContent = s; }
+  function sanitize(raw){ return (raw||'').toUpperCase().replace(/[^A-Z]/g,''); }
+  function removeVowels(s){ const vowels = yVowelToggle.checked ? 'AEIOUY' : 'AEIOU'; return [...s].filter(c=>!vowels.includes(c)).join(''); }
+  function removeDuplicates(s){ const seen = new Set(); let out=''; for(const c of s){ if(!seen.has(c)){ seen.add(c); out+=c; } } return out; }
+  function letterValue(ch){ const n = ch.charCodeAt(0)-65; if(n<0||n>25) return null; return (n % 9)+1; }
+  function compute(){
+    const raw = (intentInput.value.trim() || 'I trust myself');
+    const clean = sanitize(raw);
+    const noVowels = removeVowels(clean);
+    const reduced = removeDuplicates(noVowels);
+    const letters = [...reduced];
+    const nums = letters.map(letterValue).filter(Boolean);
+    return {raw, clean, noVowels, reduced, letters, nums};
+  }
+  function isLeanDevice(){
+    return window.matchMedia('(max-width: 760px)').matches ||
+      (window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 980) ||
+      ((navigator.hardwareConcurrency || 8) <= 4 && window.innerWidth < 1100);
+  }
+
+  function ritualTiming(){
+    const lean = isLeanDevice();
+    return lean
+      ? {input:50, vowels:150, duplicates:270, mapping:390, drawStart:520, ticksPerSeg:1, tickMs:76, sealGap:90, sealDuration:280, finalPad:120}
+      : {input:80, vowels:420, duplicates:930, mapping:1340, drawStart:1720, ticksPerSeg:3, tickMs:58, sealGap:160, sealDuration:610, finalPad:140};
+  }
+
+  function setScreen(name){
+    currentScreen = name;
+    inputScreen.classList.toggle('active', name==='input');
+    chamberScreen.classList.toggle('active', name==='chamber');
+  }
+  function setProcessActive(stage){
+    document.querySelectorAll('#stagePills .pill').forEach(p=>p.classList.toggle('active', p.dataset.stage===stage));
+    const map = {input:'boxOriginal', vowels:'boxVowels', duplicates:'boxDuplicates', mapping:'boxPath', draw:'boxPath', seal:'boxPath', final:'boxPath'};
+    ['boxOriginal','boxVowels','boxDuplicates','boxPath'].forEach(id=>$(id).classList.remove('active'));
+    if(map[stage]) $(map[stage]).classList.add('active');
+  }
+  function renderAlphabet(target, highlightLetters=[]){
+    if(!target) return;
+    target.innerHTML='';
+    const rows=[['1','2','3','4','5','6','7','8','9'],['A','B','C','D','E','F','G','H','I'],['J','K','L','M','N','O','P','Q','R'],['S','T','U','V','W','X','Y','Z','']];
+    const hits = new Set(highlightLetters);
+    rows.flat().forEach((v,idx)=>{
+      const d=document.createElement('div'); d.className='cell'; if(idx<9)d.classList.add('num'); if(!v)d.classList.add('blank'); if(hits.has(v)) d.classList.add('hit'); d.textContent=v; target.appendChild(d);
+    });
+  }
+  function pointForNumber(num){
+    const cx=280, cy=280, r=202;
+    const deg = -90 + ((num-1) * 360/9);
+    const rad = deg * Math.PI/180;
+    return {x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad)};
+  }
+  function buildPath(nums){
+    if(!nums.length) return '';
+    const pts = nums.map(pointForNumber);
+    return pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');
+  }
+  function buildSmoothPath(nums){
+    if(nums.length<2) return buildPath(nums);
+    const pts = nums.map(pointForNumber);
+    let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)} `;
+    for(let i=1;i<pts.length;i++){
+      const prev = pts[i-1], cur = pts[i];
+      const mx = (prev.x+cur.x)/2, my = (prev.y+cur.y)/2;
+      d += `Q ${prev.x.toFixed(2)} ${prev.y.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)} `;
+      if(i===pts.length-1) d += `T ${cur.x.toFixed(2)} ${cur.y.toFixed(2)} `;
+    }
+    return d;
+  }
+  function interpolatePoint(a,b,t){
+    return {x: a.x + (b.x-a.x)*t, y: a.y + (b.y-a.y)*t};
+  }
+
+  function clamp(num, min, max){
+    return Math.min(max, Math.max(min, num));
+  }
+  function hexToRgb(hex){
+    const clean = String(hex || '').replace('#','').trim();
+    const full = clean.length === 3 ? clean.split('').map(ch=>ch+ch).join('') : clean;
+    const int = parseInt(full, 16);
+    if(Number.isNaN(int)) return {r:255,g:79,b:184};
+    return {r:(int>>16)&255, g:(int>>8)&255, b:int&255};
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(v=> clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('');
+  }
+  function mixHex(a,b,amount){
+    const c1 = hexToRgb(a), c2 = hexToRgb(b), t = clamp(amount,0,1);
+    return rgbToHex(c1.r + (c2.r-c1.r)*t, c1.g + (c2.g-c1.g)*t, c1.b + (c2.b-c1.b)*t);
+  }
+  function lightenHex(hex, amount){
+    return mixHex(hex, '#ffffff', amount);
+  }
+  function darkenHex(hex, amount){
+    return mixHex(hex, '#000000', amount);
+  }
+  function setSigilToneVars(base){
+    const root = document.documentElement.style;
+    const prism = lightenHex(base, .22);
+    const violet = lightenHex(base, .38);
+    const inner = lightenHex(base, .58);
+    const hot = lightenHex(base, .82);
+    const spark = lightenHex(base, .72);
+    root.setProperty('--sigil', base);
+    root.setProperty('--sigil-prism', prism);
+    root.setProperty('--sigil-violet', violet);
+    root.setProperty('--sigil-inner', inner);
+    root.setProperty('--sigil-hot', hot);
+    root.setProperty('--sigil-spark', spark);
+  }
+
+  function buildPartialPath(nums, progress){
+    const pts = nums.map(pointForNumber);
+    if(!pts.length) return {d:'', activeIndex:-1, completedIndex:-1};
+    if(pts.length===1){
+      return {d:`M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`, activeIndex:0, completedIndex:0};
+    }
+    const segCount = pts.length - 1;
+    const clamped = Math.max(0, Math.min(progress, segCount));
+    const fullSegs = Math.floor(clamped);
+    const frac = clamped - fullSegs;
+    let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)} `;
+    for(let i=1;i<=fullSegs;i++){
+      d += `L ${pts[i].x.toFixed(2)} ${pts[i].y.toFixed(2)} `;
+    }
+    if(fullSegs < segCount){
+      const partial = interpolatePoint(pts[fullSegs], pts[fullSegs+1], frac);
+      d += `L ${partial.x.toFixed(2)} ${partial.y.toFixed(2)} `;
+    }
+    const activeIndex = Math.min(pts.length - 1, Math.max(0, Math.ceil(clamped)));
+    return {d, activeIndex, completedIndex:Math.max(0, fullSegs)};
+  }
+
+  function arcanePalette(){
+    return {
+      primary: sigilColor,
+      purple: lightenHex(sigilColor, .30),
+      gold: lightenHex(sigilColor, .18),
+      bone: '#e8ddd0',
+      inner: lightenHex(sigilColor, .58),
+      hot: lightenHex(sigilColor, .82),
+      spark: lightenHex(sigilColor, .72)
+    };
+  }
+
+  function sigilPremiumDefs(){
+    const lean = isLeanDevice();
+    const wideBlur = lean ? '5.2' : '9.5';
+    const softBlur = lean ? '2.2' : '3.4';
+    return `<filter id="sigilPremiumGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="${softBlur}" result="softGlow"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="${wideBlur}" result="wideGlow"/>
+      <feComponentTransfer in="wideGlow" result="wideBoost">
+        <feFuncA type="linear" slope=".92"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="wideBoost"/>
+        <feMergeNode in="softGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>`;
+  }
+
+  function holoStroke(d, color, width=7, cap='stroke-linecap="round" stroke-linejoin="round"', opacity=1){
+    const lean = isLeanDevice();
+    const wide = Math.max(width * (lean ? 2.05 : 2.75), width + (lean ? 6 : 9)).toFixed(2);
+    const mid = Math.max(width * 1.46, width + 3).toFixed(2);
+    const core = width.toFixed(2);
+    const inner = Math.max(1.6, width * .34).toFixed(2);
+    const hot = Math.max(1.05, width * .15).toFixed(2);
+    const echo = Math.max(width * 1.92, width + 5).toFixed(2);
+    const prismColor = lightenHex(color, .22);
+    const violetColor = lightenHex(color, .38);
+    const sparkColor = lightenHex(color, .72);
+    const innerColor = lightenHex(color, .58);
+    const prism = lean ? '' : `<path class="sigil-holo-edge sigil-holo-prism" d="${d}" stroke="${prismColor}" stroke-width="${echo}" ${cap} opacity="${(.18*opacity).toFixed(2)}"/>`+
+      `<path class="sigil-holo-edge sigil-holo-violet" d="${d}" stroke="${violetColor}" stroke-width="${(width*1.18).toFixed(2)}" ${cap} opacity="${(.24*opacity).toFixed(2)}"/>`+
+      `<path class="sigil-holo-spark" d="${d}" stroke="${sparkColor}" stroke-width="${Math.max(.95, width*.12).toFixed(2)}" ${cap} opacity="${(.42*opacity).toFixed(2)}" stroke-dasharray="1 18"/>`;
+    return `<path class="sigil-holo-wide" d="${d}" stroke="${color}" stroke-width="${wide}" ${cap} opacity="${(.13*opacity).toFixed(2)}"/>`+
+           prism+
+           `<path class="sigil-holo-mid" d="${d}" stroke="${color}" stroke-width="${mid}" ${cap} opacity="${(.58*opacity).toFixed(2)}"/>`+
+           `<path class="sigil-holo-core" d="${d}" stroke="${color}" stroke-width="${core}" ${cap} opacity="${(.96*opacity).toFixed(2)}" filter="url(#sigilPremiumGlow)"/>`+
+           `<path class="sigil-holo-inner" d="${d}" stroke="${innerColor}" stroke-width="${inner}" ${cap} opacity="${(.36*opacity).toFixed(2)}"/>`+
+           `<path class="sigil-holo-hot" d="${d}" stroke="${lightenHex(color, .82)}" stroke-width="${hot}" ${cap} opacity="${(.56*opacity).toFixed(2)}"/>`;
+  }
+
+  function buildSigilMarkup(variant=currentVariant){
+    const nums = state.nums || [];
+    const pts = nums.map(pointForNumber);
+    const rawPath = buildPath(nums);
+    const smoothPath = buildSmoothPath(nums);
+    if(!rawPath) return '';
+
+    const cap = 'stroke-linecap="round" stroke-linejoin="round"';
+    const {primary, purple, gold, bone, inner, hot, spark} = arcanePalette();
+    const start = pts[0];
+    const end = pts[pts.length-1];
+    const mid = pts[Math.floor(pts.length/2)] || {x:280, y:280};
+    const firstBend = pts[1] || mid;
+    const lastBend = pts[Math.max(0, pts.length-2)] || mid;
+
+    const halo = `<circle cx="280" cy="280" r="188" fill="none" stroke="${gold}" stroke-width="2.3" opacity=".38"/>`+
+                 `<circle cx="280" cy="280" r="114" fill="none" stroke="${purple}" stroke-width="2.1" opacity=".30"/>`;
+
+    let tickMarks = '';
+    let segmentGuides = '';
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1], b=pts[i];
+      const dx=b.x-a.x, dy=b.y-a.y;
+      const len=Math.max(1, Math.hypot(dx,dy));
+      const nx=-dy/len, ny=dx/len;
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      tickMarks += `<path d="M ${mx-nx*12} ${my-ny*12} L ${mx+nx*12} ${my+ny*12}" stroke="${gold}" stroke-width="2.5" ${cap} opacity=".52"/>`;
+      segmentGuides += `<path d="M ${a.x+nx*8} ${a.y+ny*8} L ${b.x+nx*8} ${b.y+ny*8}" stroke="${purple}" stroke-width="1.7" ${cap} opacity=".28"/>`;
+    }
+
+    if(variant==='raw'){
+      return holoStroke(rawPath, primary, 6.4, cap, 1)+
+             `<path d="${rawPath}" fill="none" stroke="${bone}" stroke-width="1.8" ${cap} opacity=".22"/>`+
+             (start ? `<circle cx="${start.x}" cy="${start.y}" r="11" fill="none" stroke="${primary}" stroke-width="3.5" opacity=".92"/>` : '')+
+             (end ? `<circle cx="${end.x}" cy="${end.y}" r="6" fill="${primary}" opacity=".95"/>` : '');
+    }
+
+    if(variant==='rune'){
+      let cutBars = '';
+      let nodeRunes = '';
+      pts.forEach((p,i)=>{
+        const base = i===0 || i===pts.length-1 ? 15 : 11;
+        nodeRunes += `<path d="M ${p.x-base} ${p.y} L ${p.x+base} ${p.y} M ${p.x} ${p.y-base} L ${p.x} ${p.y+base}" stroke="${gold}" stroke-width="2.8" ${cap} opacity="${i===0 || i===pts.length-1 ? .82 : .42}"/>`;
+      });
+      for(let i=1;i<pts.length;i++){
+        const a=pts[i-1], b=pts[i];
+        const dx=b.x-a.x, dy=b.y-a.y;
+        const len=Math.max(1, Math.hypot(dx,dy));
+        const nx=-dy/len, ny=dx/len;
+        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+        cutBars += `<path d="M ${mx-nx*18} ${my-ny*18} L ${mx+nx*18} ${my+ny*18}" stroke="${purple}" stroke-width="4.2" ${cap} opacity=".58"/>`;
+      }
+      return holoStroke(rawPath, primary, 7.1, cap, 1)+
+             `<path d="${rawPath}" fill="none" stroke="${purple}" stroke-width="3.2" ${cap} opacity=".64" filter="url(#sigilPremiumGlow)"/>`+
+             `<path d="${rawPath}" fill="none" stroke="${bone}" stroke-width="1.35" ${cap} opacity=".28"/>`+
+             cutBars+
+             nodeRunes+
+             tickMarks+
+             (start ? `<circle cx="${start.x}" cy="${start.y}" r="13" fill="none" stroke="${gold}" stroke-width="3.5" opacity=".9"/>` : '')+
+             (end ? `<path d="M ${end.x-18} ${end.y-18} L ${end.x+18} ${end.y+18} M ${end.x+18} ${end.y-18} L ${end.x-18} ${end.y+18}" stroke="${gold}" stroke-width="3.2" ${cap} opacity=".82"/>` : '');
+    }
+
+    if(variant==='astral'){
+      const star = `<path d="M 280 92 L 356 382 L 146 190 L 414 190 L 204 382 Z" fill="none" stroke="${gold}" stroke-width="2.3" ${cap} opacity=".46"/>`;
+      const lattice = `<path d="M 280 118 L 280 442 M 202 202 L 358 358 M 358 202 L 202 358 M 196 280 L 364 280 M 230 356 L 330 356" fill="none" stroke="${purple}" stroke-width="2.4" ${cap} opacity=".38"/>`;
+      const pulse = `<path d="M ${firstBend.x} ${firstBend.y} L 280 280 L ${lastBend.x} ${lastBend.y}" fill="none" stroke="${gold}" stroke-width="2.1" ${cap} opacity=".26"/>`;
+      return halo+
+             `<circle cx="280" cy="280" r="156" fill="none" stroke="${gold}" stroke-width="1.8" opacity=".24"/>`+
+             star+
+             lattice+
+             holoStroke(rawPath, primary, 6.9, cap, 1)+
+             `<path d="${rawPath}" fill="none" stroke="${purple}" stroke-width="2.45" ${cap} opacity=".38" filter="url(#sigilPremiumGlow)"/>`+
+             `<path d="${rawPath}" fill="none" stroke="${bone}" stroke-width="1.55" ${cap} opacity=".32"/>`+
+             pulse+
+             segmentGuides+
+             (start ? `<circle cx="${start.x}" cy="${start.y}" r="12" fill="${primary}" opacity=".92"/>` : '')+
+             `<circle cx="${mid.x}" cy="${mid.y}" r="8" fill="${purple}" opacity=".9"/>`+
+             (end ? `<circle cx="${end.x}" cy="${end.y}" r="10" fill="${gold}" opacity=".95"/>` : '')+
+             `<circle cx="280" cy="280" r="44" fill="none" stroke="${bone}" stroke-width="2.2" opacity=".36"/>`;
+    }
+
+    // relic: ceremonial, premium. Default is now clean: no distracting red star behind it.
+    let relicNodes = '';
+    pts.forEach((p,i)=>{
+      const r = i===0 || i===pts.length-1 ? 12 : 7;
+      relicNodes += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="none" stroke="${gold}" stroke-width="${i===0 || i===pts.length-1 ? 3.3 : 1.8}" opacity="${i===0 || i===pts.length-1 ? .82 : .38}"/>`;
+    });
+    const cleanRelicBase =
+           `<circle cx="280" cy="280" r="190" fill="none" stroke="${gold}" stroke-width="2.1" opacity=".26"/>`+
+           `<circle cx="280" cy="280" r="122" fill="none" stroke="${purple}" stroke-width="1.8" opacity=".18"/>`+
+           `<circle cx="280" cy="280" r="58" fill="none" stroke="${bone}" stroke-width="1.6" opacity=".16"/>`;
+    const ornateRelicGeometry =
+           `<path d="M 280 92 L 356 382 L 146 190 L 414 190 L 204 382 Z" fill="none" stroke="${gold}" stroke-width="1.9" ${cap} opacity=".28"/>`+
+           `<path d="M 180 300 C 230 185 330 185 380 300 C 326 255 234 255 180 300" fill="none" stroke="${purple}" stroke-width="2.2" ${cap} opacity=".28"/>`+
+           `<path d="M 280 118 L 280 442 M 205 250 L 355 250 M 232 356 L 328 356 M 202 202 L 358 358 M 358 202 L 202 358" fill="none" stroke="${gold}" stroke-width="1.7" ${cap} opacity=".22"/>`;
+    return cleanRelicBase+
+           (relicDecor ? ornateRelicGeometry : '')+
+           holoStroke(smoothPath, primary, 7.1, cap, 1)+
+           `<path d="${smoothPath}" fill="none" stroke="${purple}" stroke-width="3.1" ${cap} opacity=".48" filter="url(#sigilPremiumGlow)"/>`+
+           `<path d="${rawPath}" fill="none" stroke="${bone}" stroke-width="1.5" ${cap} opacity=".22"/>`+
+           segmentGuides+
+           tickMarks+
+           relicNodes+
+           (start ? `<path d="M ${start.x-16} ${start.y} L ${start.x+16} ${start.y} M ${start.x} ${start.y-16} L ${start.x} ${start.y+16}" stroke="${gold}" stroke-width="3.0" ${cap} opacity=".70"/>` : '')+
+           (end ? `<path d="M ${end.x-20} ${end.y} L ${end.x+20} ${end.y}" stroke="${gold}" stroke-width="3.5" ${cap} opacity=".72"/>` : '')+
+           `<path d="M 260 280 L 280 255 L 300 280 L 280 305 Z" fill="none" stroke="${bone}" stroke-width="2.1" opacity=".58"/>`;
+  }
+
+  function renderDormantWheel(){
+    let svg = `<defs><radialGradient id="orbDormant" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${sigilColor}" stop-opacity=".16"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient></defs>`;
+    svg += `<circle cx="280" cy="280" r="245" fill="url(#orbDormant)" opacity=".95"/>`;
+    svg += `<circle class="ring" cx="280" cy="280" r="202"/>`;
+    for(let n=1;n<=9;n++){
+      const p=pointForNumber(n); svg += `<line class="guide-line" x1="280" y1="280" x2="${p.x}" y2="${p.y}"/>`;
+    }
+
+    // Beginner animation: a sample path quietly forges itself before the user generates anything.
+    const demoNums = [1,4,9,2,7,3,6];
+    const demoPts = demoNums.map(pointForNumber);
+    const demoPath = demoPts.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');
+    svg += `<path class="demo-path" pathLength="1" d="${demoPath}" stroke="${sigilColor}" style="--sigil:${sigilColor}"/>`;
+    demoPts.forEach((p,i)=>{ svg += `<circle class="demo-node" cx="${p.x}" cy="${p.y}" r="${i===0?7:5}" fill="${sigilColor}" style="transform-origin:${p.x}px ${p.y}px; animation-delay:${i*.13}s"/>`; });
+
+    for(let n=1;n<=9;n++){
+      const p=pointForNumber(n); svg += `<g><circle class="node-circle" cx="${p.x}" cy="${p.y}" r="25"/><text class="node-text" x="${p.x}" y="${p.y}">${n}</text></g>`;
+    }
+    dormantWheel.innerHTML = svg;
+  }
+  function renderAmbientSigils(){
+    if(!ambientLayer) return;
+    const lean = isLeanDevice();
+    const colors = [sigilColor, lightenHex(sigilColor, .22), lightenHex(sigilColor, .42), '#e8ddd0', darkenHex(sigilColor, .18)];
+    const templates = [
+      `<path class="ambient-line" pathLength="1" d="M 0 -44 L 28 12 L -28 -6 L 16 42"/>`,
+      `<path class="ambient-line" pathLength="1" d="M -38 -22 L 34 -22 L 0 36 L -22 4"/>`,
+      `<path class="ambient-line" pathLength="1" d="M -36 0 L 0 -34 L 36 0 L 0 34 Z"/>`,
+      `<path class="ambient-line" pathLength="1" d="M -34 -34 L 34 34 M 34 -34 L -34 34 M 0 -45 L 0 45"/>`,
+      `<path class="ambient-line" pathLength="1" d="M -42 20 C -18 -36 18 -36 42 20 C 16 4 -16 4 -42 20"/>`,
+      `<path class="ambient-line" pathLength="1" d="M 0 -42 L 0 42 M -28 -10 L 28 -10 M -18 18 L 18 18"/>`,
+      `<circle class="ambient-ring" cx="0" cy="0" r="38"/><circle class="ambient-ring" cx="0" cy="0" r="18"/><path class="ambient-line" pathLength="1" d="M 0 -40 L 24 28 L -32 -10 L 32 -10 L -24 28 Z"/>`,
+      `<circle class="ambient-ring" cx="0" cy="0" r="36"/><path class="ambient-line" pathLength="1" d="M -28 0 L 0 -28 L 28 0 L 0 28 M -18 -18 L 18 18"/>`
+    ];
+
+    // Fixed left/right pairs prevent the "everything is on one side" problem.
+    // Tiny jitter keeps it alive without creating random clumps.
+    const slots = [
+      {left:9, top:17, size:72, side:'L'}, {left:86, top:17, size:72, side:'R'},
+      {left:15, top:39, size:92, side:'L'}, {left:79, top:39, size:92, side:'R'},
+      {left:8, top:67, size:76, side:'L'}, {left:88, top:67, size:76, side:'R'},
+      {left:27, top:24, size:58, side:'L'}, {left:68, top:24, size:58, side:'R'},
+      {left:29, top:72, size:64, side:'L'}, {left:69, top:72, size:64, side:'R'},
+      {left:48, top:12, size:42, side:'C'}, {left:52, top:82, size:46, side:'C'}
+    ];
+
+    let html = '';
+    const activeSlots = lean ? slots.filter((_,i)=> i < 6 || i === 10) : slots;
+    activeSlots.forEach((slot,i)=>{
+      const c = colors[i % colors.length];
+      const jitterX = (Math.random()*4 - 2);
+      const jitterY = (Math.random()*5 - 2.5);
+      const left = Math.max(3, Math.min(92, slot.left + jitterX)).toFixed(2);
+      const top = Math.max(7, Math.min(84, slot.top + jitterY)).toFixed(2);
+      const size = slot.size + Math.round(Math.random()*10 - 5);
+      const scale = (.74 + Math.random()*.30).toFixed(2);
+      const op = (slot.side === 'C' ? .15 + Math.random()*.12 : .24 + Math.random()*.28).toFixed(2);
+      const rot = (Math.random()*34 - 17).toFixed(1) + 'deg';
+      const driftDir = slot.side === 'L' ? 1 : slot.side === 'R' ? -1 : (Math.random() > .5 ? 1 : -1);
+      const driftX = (driftDir * (6 + Math.random()*10)).toFixed(1) + 'px';
+      const floatDur = (4.2 + Math.random()*2.6).toFixed(2) + 's';
+      const drawDur = (3.4 + Math.random()*2.2).toFixed(2) + 's';
+      const spinDur = (10 + Math.random()*10).toFixed(2) + 's';
+      const delay = (-Math.random()*3.2).toFixed(2) + 's';
+      const template = templates[i % templates.length];
+      html += `<div class="ambient-sigil balanced-${slot.side}" style="--c:${c};--size:${size}px;--left:${left}%;--top:${top}%;--scale:${scale};--op:${op};--rot:${rot};--driftX:${driftX};--floatDur:${floatDur};--drawDur:${drawDur};--spinDur:${spinDur};--delay:${delay};">
+        <svg viewBox="-60 -60 120 120">${template}<circle class="ambient-dot" cx="0" cy="0" r="3"/></svg>
+      </div>`;
+    });
+
+    const dustSlots = [];
+    const dustPairs = lean ? 4 : 14;
+    const centerDust = lean ? 1 : 8;
+    for(let i=0;i<dustPairs;i++){
+      dustSlots.push({left:6 + Math.random()*28, top:10 + Math.random()*78, side:'L'});
+      dustSlots.push({left:66 + Math.random()*28, top:10 + Math.random()*78, side:'R'});
+    }
+    for(let i=0;i<centerDust;i++){
+      dustSlots.push({left:40 + Math.random()*20, top:8 + Math.random()*84, side:'C'});
+    }
+    dustSlots.forEach((d,i)=>{
+      const c = colors[i % colors.length];
+      const driftDir = d.side === 'L' ? 1 : d.side === 'R' ? -1 : (Math.random()>.5?1:-1);
+      const driftX = (driftDir * (5 + Math.random()*12)).toFixed(1) + 'px';
+      const floatDur = (4.3 + Math.random()*4.2).toFixed(2) + 's';
+      html += `<span class="glyph-dust" style="--c:${c};--left:${d.left.toFixed(2)}%;--top:${d.top.toFixed(2)}%;--driftX:${driftX};--floatDur:${floatDur};"></span>`;
+    });
+    ambientLayer.innerHTML = html;
+  }
+
+
+  setSigilToneVars(sigilColor);
+
+  let generateLock = false;
+  function igniteThenRun(){
+    if(generateLock) return;
+    generateLock = true;
+    setTimeout(()=>{ generateLock = false; }, isLeanDevice() ? 420 : 1100);
+
+    if(currentScreen !== 'input'){
+      runRitual();
+      return;
+    }
+    clearTimers();
+
+    if(isLeanDevice()){
+      if(dormantChamber){
+        dormantChamber.classList.remove('igniting');
+      }
+      requestAnimationFrame(()=>{
+        runRitual();
+        setTimeout(renderAmbientSigils, 80);
+      });
+      return;
+    }
+
+    if(dormantChamber){
+      dormantChamber.classList.remove('igniting');
+      void dormantChamber.offsetWidth;
+      dormantChamber.classList.add('igniting');
+    }
+    setTimeout(()=>{
+      if(dormantChamber) dormantChamber.classList.remove('igniting');
+      runRitual();
+      setTimeout(renderAmbientSigils, 150);
+    }, 900);
+  }
+
+  function renderWheel(activeIndex=-1, draw=false, finalMode=false, showRawPath=false, progress=null){
+    const nums = state.nums || [];
+    const path = buildPath(nums);
+    const guideHidden = hideGuidesToggle.checked;
+    const pts = nums.map(pointForNumber);
+    const partial = (draw && typeof progress === 'number') ? buildPartialPath(nums, progress) : null;
+    let svg = `<defs><radialGradient id="orb" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${sigilColor}" stop-opacity=".22"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>${sigilPremiumDefs()}</defs>`;
+    if(previewMode === 'poster'){
+      svg += `<rect width="560" height="560" fill="#efe0c5"/>`;
+    } else if(!transparentPreview) {
+      svg += `<circle cx="280" cy="280" r="245" fill="url(#orb)" opacity=".8"/>`;
+    }
+    if(!guideHidden && previewMode!=='poster'){
+      svg += `<circle class="ring" cx="280" cy="280" r="202"/>`;
+      for(let n=1;n<=9;n++){ const p=pointForNumber(n); svg += `<line class="guide-line" x1="280" y1="280" x2="${p.x}" y2="${p.y}"/>`; }
+    }
+
+    if(finalMode){
+      svg += `<g>${buildSigilMarkup(currentVariant)}</g>`;
+    } else if(draw && partial && partial.d){
+      svg += holoStroke(partial.d, sigilColor, 7.2, 'stroke-linecap="round" stroke-linejoin="round"', 1);
+      for(let i=0;i<=partial.completedIndex;i++){
+        if(pts[i]) svg += `<circle cx="${pts[i].x}" cy="${pts[i].y}" r="6.5" fill="${sigilColor}" opacity=".92"/>`;
+      }
+      const active = pts[partial.activeIndex];
+      if(active){
+        svg += `<circle cx="${active.x}" cy="${active.y}" r="12" fill="none" stroke="${sigilColor}" stroke-width="3.5" opacity=".95"/>`;
+        svg += `<circle cx="${active.x}" cy="${active.y}" r="5.2" fill="${sigilColor}" opacity=".95"/>`;
+      }
+    } else if(path && !finalMode && showRawPath){
+      svg += holoStroke(path, sigilColor, 7.2, 'stroke-linecap="round" stroke-linejoin="round"', 1);
+      pts.forEach((p,i)=>{ svg += `<circle cx="${p.x}" cy="${p.y}" r="6" fill="${sigilColor}" opacity="${activeIndex>=0 && i<=activeIndex ? .95 : .52}"/>`; });
+    }
+
+    if(previewMode !== 'poster'){
+      for(let n=1;n<=9;n++){
+        const p=pointForNumber(n);
+        let active = false;
+        if(draw && partial){
+          active = nums[partial.activeIndex]===n;
+        } else if(activeIndex>=0){
+          active = nums[activeIndex]===n;
+        }
+        svg += `<g><circle class="node-circle ${active?'active-node':''}" cx="${p.x}" cy="${p.y}" r="25"/><text class="node-text" x="${p.x}" y="${p.y}">${n}</text></g>`;
+      }
+    }
+    wheelSvg.innerHTML = svg;
+  }
+
+  function animateSvgPath(el, duration=1400){
+    if(!el || !el.getTotalLength) return;
+    const len = el.getTotalLength();
+    el.style.transition = 'none';
+    el.style.strokeDasharray = len;
+    el.style.strokeDashoffset = len;
+    el.getBoundingClientRect();
+    requestAnimationFrame(()=>{
+      el.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(.2,.85,.15,1)`;
+      el.style.strokeDashoffset = '0';
+    });
+  }
+  function renderOriginalAnimated(){
+    originalText.innerHTML = state.clean ? [...state.clean].map(c=>`<span class="letter">${c}</span>`).join('') : '—';
+  }
+  function renderVowelAnimated(final=false){
+    const vowels = yVowelToggle.checked ? 'AEIOUY' : 'AEIOU';
+    const chars = [...(state.clean||'')].map(c=>{
+      const vanish = vowels.includes(c) ? (final ? ' vanish' : '') : '';
+      return vowels.includes(c) ? `<span class="letter${vanish}">${c}</span>` : `<span class="letter">${c}</span>`;
+    }).join('');
+    vowelText.innerHTML = chars || '—';
+    if(final){ timers.push(setTimeout(()=>{ vowelText.textContent = state.noVowels || '—'; }, 520)); }
+  }
+  function renderDuplicateAnimated(final=false){
+    const seen = new Set(); let html='';
+    for(const c of (state.noVowels||'')){
+      const duplicate = seen.has(c); if(!duplicate) seen.add(c);
+      html += `<span class="letter${duplicate && final ? ' duplicate' : ''}">${c}</span>`;
+    }
+    duplicateText.innerHTML = html || '—';
+    if(final){ timers.push(setTimeout(()=>{ duplicateText.textContent = state.reduced || '—'; }, 520)); }
+  }
+  function pathDescription(){
+    if(!state.letters.length) return '—';
+    return state.letters.map((l,i)=>`${l}=${state.nums[i]}`).join(' • ') + `  |  ${state.nums.join(' → ')}`;
+  }
+  function finalSvgString(variant=currentVariant, opts={transparent:false, forExport:false}){
+    const bg = opts.transparent ? '' : (previewMode==='poster'
+      ? `<rect width="560" height="560" fill="#efe0c5"/>`
+      : `<rect width="560" height="560" fill="#050000"/><circle cx="280" cy="280" r="245" fill="#160202"/><circle cx="280" cy="280" r="202" fill="none" stroke="rgba(255,79,216,.22)" stroke-width="2"/>`);
+    const glow = opts.forExport && opts.transparent ? `<defs>${sigilPremiumDefs()}</defs>` : `<defs>${sigilPremiumDefs()}<filter id="fg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+    const filter = opts.forExport && opts.transparent ? '' : 'filter="url(#fg)"';
+    const posterHead = previewMode==='poster' && !opts.transparent ? `<text x="280" y="55" text-anchor="middle" font-family="Georgia, serif" font-size="28" letter-spacing="3" fill="#34180a">SIGIL STUDIO</text>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 560">${glow}${bg}${posterHead}<g ${filter}>${buildSigilMarkup(variant)}</g></svg>`;
+  }
+  function renderPreviewMode(){
+    previewFrame.className = 'preview-frame mode-' + previewMode + ' variant-' + currentVariant + (transparentPreview ? ' transparent-on' : '');
+    previewFrame.innerHTML = '';
+    if(previewMode==='shirt'){
+      const shirt = document.createElement('div'); shirt.className='shirt-shape' + (transparentPreview ? ' transparent-on' : ''); previewFrame.appendChild(shirt);
+    }
+    if(previewMode==='poster'){
+      const head = document.createElement('div'); head.className='poster-head'; head.textContent='Sigil Studio'; previewFrame.appendChild(head);
+    }
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 560 560'); svg.setAttribute('class','preview-svg'); svg.setAttribute('id','wheelSvg');
+    previewFrame.appendChild(svg);
+    // reset global pointer to same id? easier use variable update
+    wheelSvg = svg;
+  }
+  function renderFinal(triggerPop=false){
+    renderWheel(-1,false,true);
+    if(triggerPop) triggerCompletionPop();
+    printSigil.innerHTML = finalSvgString(currentVariant,{transparent:true,forExport:true});
+    printMeta.textContent = `${state.raw || ''}  •  ${state.reduced || ''}  •  ${state.nums?.join(' → ') || ''}`;
+  }
+
+  function triggerCompletionPop(){
+    if(!previewFrame) return;
+    previewFrame.classList.remove('completion-burst');
+    void previewFrame.offsetWidth;
+    previewFrame.classList.add('completion-burst');
+    timers.push(setTimeout(()=>previewFrame.classList.remove('completion-burst'), 980));
+  }
+
+  function triggerFinalForgeSequence(){
+    const screen = chamberScreen;
+    const banner = document.querySelector('.stage-banner');
+    if(screen){ screen.classList.remove('final-forging'); void screen.offsetWidth; screen.classList.add('final-forging'); }
+    if(forgeStage){ forgeStage.classList.remove('final-charging'); void forgeStage.offsetWidth; forgeStage.classList.add('final-charging'); }
+    if(banner){ banner.classList.remove('forged-glow'); void banner.offsetWidth; banner.classList.add('forged-glow'); }
+    ['boxOriginal','boxVowels','boxDuplicates','boxPath'].forEach((id,i)=>{
+      const el = $(id);
+      if(!el) return;
+      timers.push(setTimeout(()=>{
+        el.classList.remove('ritual-pulse');
+        void el.offsetWidth;
+        el.classList.add('ritual-pulse');
+      }, i * (isLeanDevice() ? 55 : 130)));
+      timers.push(setTimeout(()=>el.classList.remove('ritual-pulse'), 780 + i * (isLeanDevice() ? 55 : 130)));
+    });
+    timers.push(setTimeout(()=>{
+      if(screen) screen.classList.remove('final-forging');
+      if(forgeStage) forgeStage.classList.remove('final-charging');
+      if(banner) banner.classList.remove('forged-glow');
+    }, isLeanDevice() ? 820 : 1450));
+  }
+
+  // V24: SIGIL SEALED completion moment. One-shot, timer-driven, fully cleared on replay/edit.
+  function triggerSealMoment(){
+    const nums = state.nums || [];
+    if(!nums.length) return;
+    const lean = isLeanDevice();
+    const startDelay = lean ? 240 : 480;
+    const step = lean ? 150 : 220;
+    // Flash ONLY the numbers the sigil used, one at a time, in the exact order they were drawn.
+    // The lit window is shorter than the step so flashes never overlap or stack.
+    const litMs = step - 40;
+    nums.forEach((n, i)=>{
+      timers.push(setTimeout(()=>{
+        if(setStageCurrent !== 'final' || !wheelSvg) return;
+        wheelSvg.querySelectorAll('.node-circle.seal-flash').forEach(el=>el.classList.remove('seal-flash'));
+        const node = wheelSvg.querySelectorAll('.node-circle')[n-1];
+        if(!node) return;
+        node.classList.add('seal-flash');
+        timers.push(setTimeout(()=>node.classList.remove('seal-flash'), litMs));
+      }, startDelay + i*step));
+    });
+    // Then one pulse + brief shimmer, and the status flips to SIGIL SEALED.
+    const sealAt = startDelay + nums.length*step + 90;
+    timers.push(setTimeout(()=>{
+      if(setStageCurrent !== 'final') return;
+      setStatus('SIGIL SEALED');
+      if(!previewFrame) return;
+      previewFrame.classList.remove('seal-pulse');
+      void previewFrame.offsetWidth;
+      previewFrame.classList.add('seal-pulse');
+      const shimmer = document.createElement('div');
+      shimmer.className = 'seal-shimmer-layer';
+      shimmer.setAttribute('aria-hidden','true');
+      previewFrame.appendChild(shimmer);
+      timers.push(setTimeout(()=>{
+        previewFrame.classList.remove('seal-pulse');
+        if(shimmer.parentNode) shimmer.remove();
+      }, lean ? 700 : 1000));
+    }, sealAt));
+  }
+
+  function rerenderCurrentPreview(){
+    renderPreviewMode();
+    if(currentScreen==='chamber' && state.nums.length){
+      if(setStageCurrent==='final') renderFinal();
+      else if(setStageCurrent==='seal') renderWheel(-1,false,false,true);
+      else renderWheel(-1,false,false);
+    }
+    const btn = $('transparentPreviewBtn');
+    if(btn) btn.classList.toggle('active', transparentPreview);
+  }
+
+  function safeFileStem(){
+    const raw = (state.raw || intentInput.value || 'sigil').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return raw.slice(0,42) || 'sigil';
+  }
+
+  function triggerDownloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1200);
+  }
+
+  function exportSvg(){
+    const svg = finalSvgString(currentVariant,{transparent:transparentPreview,forExport:true});
+    triggerDownloadBlob(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}), `${safeFileStem()}-${currentVariant}${transparentPreview?'-transparent':''}.svg`);
+  }
+
+  function exportPng(transparent=false){
+    const svg = finalSvgString(currentVariant,{transparent,forExport:true});
+    const blob = new Blob([svg], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = 1400; canvas.height = 1400;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      canvas.toBlob((pngBlob)=>{
+        if(pngBlob) triggerDownloadBlob(pngBlob, `${safeFileStem()}-${currentVariant}${transparent?'-transparent':''}.png`);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    };
+    img.onerror = ()=>URL.revokeObjectURL(url);
+    img.src = url;
+  }
+
+  // V24: Export Pack — transparent PNG + black-background PNG + SVG + metadata TXT.
+  // Downloads are staggered so browsers don't swallow the extra files.
+  function exportSvgFile(transparent){
+    const svg = finalSvgString(currentVariant,{transparent:!!transparent,forExport:true});
+    triggerDownloadBlob(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}), `${safeFileStem()}-${currentVariant}${transparent?'-transparent':''}.svg`);
+  }
+  function exportMetaTxt(){
+    const lines = [
+      'SIGIL STUDIO — EXPORT PACK',
+      '==========================',
+      'Intention: ' + (state.raw || '—'),
+      'Final cleaned text: ' + (state.reduced || '—'),
+      'Number path: ' + (state.nums && state.nums.length ? state.nums.join(' → ') : '—'),
+      'Color: ' + sigilColorLabel + ' (' + sigilColor + ')',
+      'Variant: ' + currentVariant,
+      'Background mode: ' + stageBackground,
+      'Exported: ' + new Date().toLocaleString()
+    ];
+    triggerDownloadBlob(new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'}), `${safeFileStem()}-sigil-meta.txt`);
+  }
+  function exportPack(){
+    if(!state.nums.length) return;
+    exportPng(true);                              // 1. transparent PNG
+    setTimeout(()=>exportPng(false), 520);        // 2. PNG with black background
+    setTimeout(()=>exportSvgFile(true), 1040);    // 3. SVG
+    setTimeout(exportMetaTxt, 1480);              // 4. metadata TXT
+  }
+
+  function loadGallery(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }catch(e){ return []; }
+  }
+
+  function writeGallery(items){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  function renderGallery(){
+    const items = loadGallery();
+    gallery.innerHTML = items.length ? items.map(item=>`<button class="gallery-card" data-id="${item.id}"><div class="gallery-thumb">${item.svg}</div><div class="gallery-caption">${item.label}</div></button>`).join('') : `<div class="transparent-note">No saved sigils yet.</div>`;
+  }
+
+  function saveGallery(){
+    if(!state.nums.length) return;
+    const items = loadGallery();
+    const item = {
+      id: Date.now().toString(36),
+      label: (state.raw || 'Sigil').slice(0,30),
+      raw: state.raw,
+      color: sigilColor,
+      variant: currentVariant,
+      previewMode,
+      transparentPreview,
+      yVowel: yVowelToggle.checked,
+      hideGuides: hideGuidesToggle.checked,
+      svg: finalSvgString(currentVariant,{transparent:true,forExport:true})
+    };
+    items.unshift(item);
+    writeGallery(items.slice(0,24));
+    renderGallery();
+  }
+
+  function restoreItem(id){
+    const item = loadGallery().find(x=>x.id===id);
+    if(!item) return;
+    intentInput.value = item.raw || '';
+    sigilColor = item.color || sigilColor;
+    currentVariant = ['astral','rune','relic','raw','eclipse'].includes(item.variant) ? item.variant : currentVariant;
+    previewMode = item.previewMode || 'sigil';
+    transparentPreview = !!item.transparentPreview;
+    yVowelToggle.checked = !!item.yVowel;
+    hideGuidesToggle.checked = !!item.hideGuides;
+    colorPicker.value = sigilColor;
+    setSigilToneVars(sigilColor);
+    document.querySelectorAll('.swatch').forEach(el=>el.classList.toggle('active', el.dataset.color===sigilColor));
+    updateSummary();
+    closeGallery();
+    runRitual();
+    setTimeout(()=>{ setVariant(currentVariant); setPreviewMode(previewMode); rerenderCurrentPreview(); }, forgeDurationMs()+60);
+  }
+
+  function openGallery(){ galleryOverlay.classList.add('active'); renderGallery(); }
+  function closeGallery(){ galleryOverlay.classList.remove('active'); }
+
+  function forgeDurationMs(){
+    const segCount = Math.max(1, state.nums.length - 1);
+    const timing = ritualTiming();
+    const totalTicks = Math.max(1, segCount * timing.ticksPerSeg);
+    return timing.drawStart + totalTicks * timing.tickMs + timing.sealGap + timing.sealDuration + timing.finalPad;
+  }
+  function updateSummary(){
+    summaryIntent.textContent = state.clean || sanitize(intentInput.value) || '—';
+    summaryColor.textContent = sigilColorLabel;
+  }
+  function setVariant(name){
+    currentVariant = name;
+    document.querySelectorAll('[data-variant]').forEach(btn=>{ const on = btn.dataset.variant===name; btn.classList.toggle('active', on); btn.classList.toggle('secondary', !on); });
+    if(previewFrame){
+      ['rune','astral','relic','raw','eclipse'].forEach(v=>previewFrame.classList.remove('variant-'+v));
+      previewFrame.classList.add('variant-' + currentVariant);
+    }
+    if(currentScreen==='chamber' && state.nums.length && setStageCurrent==='final') renderFinal();
+  }
+  function setPreviewMode(name){
+    previewMode = name;
+    document.querySelectorAll('[data-preview]').forEach(btn=>{ const on = btn.dataset.preview===name; btn.classList.toggle('active', on); btn.classList.toggle('secondary', !on); });
+    rerenderCurrentPreview();
+  }
+  let setStageCurrent = 'input';
+  function gotoStage(stage){
+    setStageCurrent = stage;
+    setProcessActive(stage);
+    const map = {
+      input:['Awaiting ignition','Phrase prepared'],
+      vowels:['Vowels burning','Stripping the breath'],
+      duplicates:['Duplicates sealing','Collapsing repeats'],
+      mapping:['Mapping letters','Numbers awakening'],
+      draw:['Laser drawing','Forging path'],
+      seal:['Sealing sigil','Cooling the mark'],
+      final:['Sigil forged','Final form complete']
+    };
+    setStageTitle(map[stage][0]);
+    setStatus(map[stage][1]);
+    helperLine.textContent = {
+      input:'The intention is loaded and ready.',
+      vowels:'Vowels dissolve away so the skeletal phrase remains.',
+      duplicates:'Repeated letters collapse into the first occurrence.',
+      mapping:'The surviving letters illuminate their 1–9 correspondences.',
+      draw:'The wheel traces the living path in sequence.',
+      seal:'The raw line cools, seals, and locks its charge.',
+      final:'Choose the final style and export format.'
+    }[stage];
+  }
+  function resetForgeVisual(){
+    clearTimers();
+    renderPreviewMode();
+    renderOriginalAnimated();
+    vowelText.textContent = '—';
+    duplicateText.textContent = '—';
+    pathText.textContent = '—';
+    renderAlphabet(alphabetGrid, []);
+    renderWheel(-1,false,false);
+    gotoStage('input');
+    forgeStage.classList.toggle('ritual', ritualModeToggle.checked);
+    previewFrame.classList.remove('cooling');
+    chamberScreen.classList.remove('final-forging');
+    forgeStage.classList.remove('final-charging');
+    const banner = document.querySelector('.stage-banner'); if(banner) banner.classList.remove('forged-glow');
+    ['boxOriginal','boxVowels','boxDuplicates','boxPath'].forEach(id=>{ const el=$(id); if(el) el.classList.remove('ritual-pulse'); });
+  }
+  function runRitual(){
+    clearTimers();
+    state = compute();
+    updateSummary();
+    setScreen('chamber');
+    resetForgeVisual();
+    renderOriginalAnimated();
+    originalText.textContent = state.clean || '—';
+    pathText.textContent = '—';
+
+    const timing = ritualTiming();
+    timers.push(setTimeout(()=>{ gotoStage('input'); originalText.textContent = state.clean || '—'; }, timing.input));
+    timers.push(setTimeout(()=>{ gotoStage('vowels'); renderVowelAnimated(true); }, timing.vowels));
+    timers.push(setTimeout(()=>{ gotoStage('duplicates'); renderDuplicateAnimated(true); }, timing.duplicates));
+    timers.push(setTimeout(()=>{ gotoStage('mapping'); renderAlphabet(alphabetGrid, state.letters); pathText.textContent = pathDescription(); }, timing.mapping));
+
+    const drawStart = timing.drawStart;
+    const segCount = Math.max(1, state.nums.length - 1);
+    const ticksPerSeg = timing.ticksPerSeg;
+    const tickMs = timing.tickMs;
+    const totalTicks = Math.max(1, segCount * ticksPerSeg);
+
+    timers.push(setTimeout(()=>{ 
+      gotoStage('draw'); 
+      renderWheel(-1,true,false,false,0); 
+    }, drawStart));
+
+    for(let t=0; t<=totalTicks; t++){
+      const progress = segCount * (t / totalTicks);
+      timers.push(setTimeout(()=>{ 
+        renderWheel(-1,true,false,false,progress);
+      }, drawStart + t*tickMs));
+    }
+
+    const sealStart = drawStart + totalTicks*tickMs + timing.sealGap;
+    const finalStart = sealStart + timing.sealDuration;
+    timers.push(setTimeout(()=>{ 
+      gotoStage('seal'); 
+      previewFrame.classList.add('cooling'); 
+      renderWheel(-1,false,false,true); 
+    }, sealStart));
+    timers.push(setTimeout(()=>{ 
+      previewFrame.classList.remove('cooling'); 
+      gotoStage('final'); 
+      renderFinal(true); 
+      triggerFinalForgeSequence(); 
+      triggerSealMoment();
+    }, finalStart));
+  }
+
+  function initSwatches(){
+    const swatchHTML = colors.map(c=>`<button type="button" class="swatch ${c.hex===sigilColor?'active':''}" style="background:${c.hex}" data-color="${c.hex}" data-label="${c.label}" aria-label="${c.label}"></button>`).join('');
+    swatches.innerHTML = swatchHTML;
+    sideSwatches.innerHTML = swatchHTML;
+
+    function selectColor(color, label){
+      sigilColor = color;
+      sigilColorLabel = label || 'Custom';
+      colorPicker.value = sigilColor;
+      setSigilToneVars(sigilColor);
+      document.querySelectorAll('.swatch').forEach(el=>el.classList.toggle('active', el.dataset.color===sigilColor));
+      renderDormantWheel();
+      renderAmbientSigils();
+      if(currentScreen==='chamber' && state.nums.length){
+        if(setStageCurrent==='final') renderFinal();
+        else renderWheel(-1,false,false,setStageCurrent==='seal');
+        updateSummary();
+      }
+    }
+
+    swatches.addEventListener('click', e=>{
+      const b = e.target.closest('.swatch'); if(!b) return;
+      selectColor(b.dataset.color, b.dataset.label);
+    });
+
+    sideSwatches.addEventListener('click', e=>{
+      const b = e.target.closest('.swatch'); if(!b) return;
+      selectColor(b.dataset.color, b.dataset.label);
+    });
+  }
+
+
+  function applyBackdropMode(mode){
+    stageBackground = ['black','stars','nebula'].includes(mode) ? mode : 'black';
+    if(forgeStage) forgeStage.dataset.bg = stageBackground;
+    document.querySelectorAll('[data-bgmode]').forEach(btn=>{
+      const on = btn.dataset.bgmode === stageBackground;
+      btn.classList.toggle('active', on);
+      btn.classList.toggle('secondary', !on);
+    });
+  }
+
+  function setRelicDecor(on){
+    relicDecor = !!on;
+    const btn = $('relicDecorBtn');
+    if(btn) btn.classList.toggle('active', relicDecor);
+    if(currentVariant === 'relic') rerenderCurrentPreview();
+  }
+
+  // Robust right-panel controls: event delegation keeps buttons working after rerenders.
+  document.addEventListener('click', e=>{
+    const bgBtn = e.target.closest('[data-bgmode]');
+    if(bgBtn){
+      e.preventDefault();
+      applyBackdropMode(bgBtn.dataset.bgmode);
+      return;
+    }
+    const variantBtn = e.target.closest('[data-variant]');
+    if(variantBtn){
+      e.preventDefault();
+      setVariant(variantBtn.dataset.variant);
+      return;
+    }
+    const previewBtn = e.target.closest('[data-preview]');
+    if(previewBtn){
+      e.preventDefault();
+      previewMode = previewBtn.dataset.preview;
+      document.querySelectorAll('[data-preview]').forEach(b=>{
+        const on = b === previewBtn;
+        b.classList.toggle('active', on);
+        b.classList.toggle('secondary', !on);
+      });
+      rerenderCurrentPreview();
+      return;
+    }
+  });
+
+  function bindAction(id, handler){
+    const el = $(id);
+    if(!el) return;
+    let last = 0;
+    const run = (e)=>{
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      const now = Date.now();
+      if(now - last < 280) return;
+      last = now;
+      handler();
+    };
+    el.addEventListener('pointerup', run, {passive:false});
+    el.addEventListener('touchend', run, {passive:false});
+    el.addEventListener('click', run);
+    el.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' ') run(e);
+    });
+  }
+
+  bindAction('generateBtn', igniteThenRun);
+  bindAction('generateBtnTop', igniteThenRun);
+  $('clearBtn').addEventListener('click', ()=>{ intentInput.value=''; setScreen('input'); state={raw:'',clean:'',noVowels:'',reduced:'',letters:[],nums:[]}; renderDormantWheel(); renderAmbientSigils(); renderAlphabet(compactAlphabet,[]); });
+  $('replayBtn').addEventListener('click', runRitual);
+  $('replayTop').addEventListener('click', ()=>{ if(currentScreen==='chamber') runRitual(); });
+  $('editBtn').addEventListener('click', ()=>setScreen('input'));
+  $('editFromTop').addEventListener('click', ()=>setScreen('input'));
+  $('backToInputBtn').addEventListener('click', ()=>setScreen('input'));
+  $('openGalleryInput').addEventListener('click', openGallery);
+  $('openGalleryChamber').addEventListener('click', openGallery);
+  $('openGalleryTop').addEventListener('click', openGallery);
+  $('closeGalleryBtn').addEventListener('click', closeGallery);
+  $('clearGalleryBtn').addEventListener('click', ()=>{ localStorage.removeItem(STORAGE_KEY); renderGallery(); });
+  gallery.addEventListener('click', e=>{ const card=e.target.closest('.gallery-card'); if(card) restoreItem(card.dataset.id); });
+  ritualModeToggle.addEventListener('change', ()=> forgeStage.classList.toggle('ritual', ritualModeToggle.checked));
+  colorPicker.addEventListener('input', ()=>{ sigilColor = colorPicker.value; sigilColorLabel = 'Custom'; setSigilToneVars(sigilColor); document.querySelectorAll('.swatch').forEach(el=>el.classList.remove('active')); renderDormantWheel(); rerenderCurrentPreview(); updateSummary(); });
+  hideGuidesToggle.addEventListener('change', ()=>{ renderDormantWheel(); rerenderCurrentPreview() });
+  yVowelToggle.addEventListener('change', ()=>{ if(currentScreen==='chamber' && state.raw) runRitual(); });
+  $('transparentPreviewBtn').addEventListener('click', ()=>{ transparentPreview = !transparentPreview; rerenderCurrentPreview(); });
+  const relicDecorBtn = $('relicDecorBtn');
+  if(relicDecorBtn) relicDecorBtn.addEventListener('click', ()=>setRelicDecor(!relicDecor));
+
+  document.querySelectorAll('[data-variant]').forEach(btn=>btn.addEventListener('click', ()=>setVariant(btn.dataset.variant)));
+  document.querySelectorAll('[data-preview]').forEach(btn=>btn.addEventListener('click', ()=>setPreviewMode(btn.dataset.preview)));
+
+  $('exportPngBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || !state.nums.length) runRitual(); setTimeout(()=>exportPng(false), (currentScreen!=='chamber'||setStageCurrent!=='final') ? forgeDurationMs() : 0); });
+  $('exportTransparentBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || !state.nums.length) runRitual(); setTimeout(()=>exportPng(true), (currentScreen!=='chamber'||setStageCurrent!=='final') ? forgeDurationMs() : 0); });
+  $('exportSvgBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || !state.nums.length) runRitual(); setTimeout(exportSvg, (currentScreen!=='chamber'||setStageCurrent!=='final') ? forgeDurationMs() : 0); });
+  $('printBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || setStageCurrent!=='final'){ runRitual(); setTimeout(()=>window.print(), forgeDurationMs());} else window.print(); });
+  $('saveBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || setStageCurrent!=='final'){ runRitual(); setTimeout(saveGallery, forgeDurationMs());} else saveGallery(); });
+  $('exportPackBtn').addEventListener('click', ()=>{ if(currentScreen!=='chamber' || !state.nums.length) runRitual(); setTimeout(exportPack, (currentScreen!=='chamber'||setStageCurrent!=='final') ? forgeDurationMs() : 0); });
+
+  // V24: Background intensity — 0 nearly black, 30 subtle, 70 clearly visible, 100 full strength.
+  // Drives a single CSS variable; Black mode is untouched because the CSS only targets Stars/Nebula.
+  const bgIntensitySlider = $('bgIntensity');
+  function applyBgIntensity(v){
+    const val = clamp(Number(v)||0, 0, 100);
+    const dim = (1 - val/100) * 0.97;
+    if(forgeStage) forgeStage.style.setProperty('--bgDim', dim.toFixed(3));
+    const label = $('bgIntensityValue');
+    if(label) label.textContent = Math.round(val);
+  }
+  if(bgIntensitySlider){
+    bgIntensitySlider.addEventListener('input', ()=>applyBgIntensity(bgIntensitySlider.value));
+    applyBgIntensity(bgIntensitySlider.value);
+  }
+
+  applyBackdropMode(stageBackground);
+  setRelicDecor(relicDecor);
+
+  renderAlphabet(compactAlphabet,[]);
+  renderAlphabet(alphabetGrid,[]);
+  initSwatches();
+  setVariant(currentVariant);
+  renderPreviewMode();
+  renderDormantWheel();
+  renderAmbientSigils();
+  renderGallery();
+  setScreen('input');
+  updateSummary();
+  const tBtn = $('transparentPreviewBtn'); if(tBtn) tBtn.classList.toggle('active', transparentPreview);
+})();
+</script>
+</body>
+</html>
